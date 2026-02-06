@@ -96,11 +96,6 @@ function App() {
             </div>
           )}
         </div>
-
-        {/* Footer */}
-        <footer className="mt-8 text-center text-sm text-gray-500">
-          <p>Built for Darkfall gear optimization</p>
-        </footer>
       </div>
     </div>
   );
