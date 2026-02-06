@@ -1,0 +1,15 @@
+{
+  "datasets": [
+    {
+      "id": "fire100-slashing100",
+      "displayName": "50% Fire, 50% Slashing",
+      "filePath": "/darkfall-gear-optimizer-web/results-2026-02-06-09-16-24-minimal-fire100-slashing100.json"
+    },
+    {
+      "id": "slashing100",
+      "displayName": "100% Slashing",
+      "filePath": "/darkfall-gear-optimizer-web/results-2026-02-06-09-23-38-minimal-slashing100.json"
+    }
+  ],
+  "armorTypes": ["NoArmor", "Cloth", "Bone", "Leather", "Studded", "Chain", "Banded", "Scale", "Plate", "FullPlate", "Infernal", "Phantasmal", "Wyvern"]
+}
