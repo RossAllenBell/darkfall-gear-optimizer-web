@@ -140,11 +140,13 @@ export function parseGearData(gearSet) {
 }
 
 /**
- * Gets the CSS class for a specific armor type
+ * Gets the CSS classes for a specific armor type (background + text color)
  * @param {string} armorType - Armor type name
- * @returns {string} - Tailwind CSS class name
+ * @returns {string} - Tailwind CSS class names
  */
 export function getArmorColorClass(armorType) {
   const type = armorType.toLowerCase().replace(/\s+/g, '');
-  return `bg-armor-${type}`;
+  const darkTypes = ['scale', 'plate', 'fullplate', 'infernal', 'wyvern'];
+  const textClass = darkTypes.includes(type) ? 'text-white' : 'text-gray-900';
+  return `bg-armor-${type} ${textClass}`;
 }

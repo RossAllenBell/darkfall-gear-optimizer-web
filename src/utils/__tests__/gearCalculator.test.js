@@ -165,19 +165,33 @@ describe('gearCalculator', () => {
   });
 
   describe('getArmorColorClass', () => {
-    it('should return correct CSS class for armor type', () => {
-      expect(getArmorColorClass('Bone')).toBe('bg-armor-bone');
-      expect(getArmorColorClass('Leather')).toBe('bg-armor-leather');
-      expect(getArmorColorClass('Plate')).toBe('bg-armor-plate');
+    it('should return correct CSS classes for armor type', () => {
+      expect(getArmorColorClass('Bone')).toBe('bg-armor-bone text-gray-900');
+      expect(getArmorColorClass('Leather')).toBe('bg-armor-leather text-gray-900');
+      expect(getArmorColorClass('Plate')).toBe('bg-armor-plate text-white');
+    });
+
+    it('should use white text for dark armor types', () => {
+      expect(getArmorColorClass('Scale')).toContain('text-white');
+      expect(getArmorColorClass('Plate')).toContain('text-white');
+      expect(getArmorColorClass('FullPlate')).toContain('text-white');
+      expect(getArmorColorClass('Infernal')).toContain('text-white');
+      expect(getArmorColorClass('Wyvern')).toContain('text-white');
+    });
+
+    it('should use dark text for light armor types', () => {
+      expect(getArmorColorClass('Bone')).toContain('text-gray-900');
+      expect(getArmorColorClass('Cloth')).toContain('text-gray-900');
+      expect(getArmorColorClass('Leather')).toContain('text-gray-900');
     });
 
     it('should handle armor types with spaces', () => {
-      expect(getArmorColorClass('Full Plate')).toBe('bg-armor-fullplate');
+      expect(getArmorColorClass('Full Plate')).toBe('bg-armor-fullplate text-white');
     });
 
     it('should handle case insensitivity', () => {
-      expect(getArmorColorClass('BONE')).toBe('bg-armor-bone');
-      expect(getArmorColorClass('LeAtHeR')).toBe('bg-armor-leather');
+      expect(getArmorColorClass('BONE')).toBe('bg-armor-bone text-gray-900');
+      expect(getArmorColorClass('LeAtHeR')).toBe('bg-armor-leather text-gray-900');
     });
   });
 });

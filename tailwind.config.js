@@ -4,6 +4,10 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    { pattern: /bg-armor-/ },
+    { pattern: /text-armor-/ },
+  ],
   theme: {
     extend: {
       colors: {

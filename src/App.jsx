@@ -42,7 +42,7 @@ function App() {
         </header>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className={hasDataset ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'max-w-2xl'}>
           {/* Left Column - Inputs */}
           <div className="space-y-4">
             <DatasetSelector
@@ -79,17 +79,19 @@ function App() {
             />
           </div>
 
-          {/* Right Column - Results */}
-          <div>
-            <ResultsDisplay
-              optimalGear={optimalGear}
-              loading={loading}
-              error={error}
-              hasDataset={hasDataset}
-              featherEnabled={featherEnabled}
-              headArmorType={headArmorType}
-            />
-          </div>
+          {/* Right Column - Results (only shown when dataset is selected) */}
+          {hasDataset && (
+            <div>
+              <ResultsDisplay
+                optimalGear={optimalGear}
+                loading={loading}
+                error={error}
+                hasDataset={hasDataset}
+                featherEnabled={featherEnabled}
+                headArmorType={headArmorType}
+              />
+            </div>
+          )}
         </div>
 
         {/* Footer */}
