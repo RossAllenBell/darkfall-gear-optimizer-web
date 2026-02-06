@@ -21,18 +21,18 @@ describe('FeatherInput', () => {
 
   it('should render checkbox for enabling feather mode', () => {
     render(<FeatherInput {...defaultProps} />);
-    expect(screen.getByLabelText('Enable Feathered Head Gear')).toBeInTheDocument();
+    expect(screen.getByLabelText("I'm using Head armor with Feather")).toBeInTheDocument();
   });
 
   it('should not show feather inputs when disabled', () => {
     render(<FeatherInput {...defaultProps} />);
-    expect(screen.queryByLabelText('Feather Value (0-200)')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Feather Value (0.1-30)')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Head Armor Type')).not.toBeInTheDocument();
   });
 
   it('should show feather inputs when enabled', () => {
     render(<FeatherInput {...defaultProps} enabled={true} />);
-    expect(screen.getByLabelText('Feather Value (0-200)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Feather Value (0.1-30)')).toBeInTheDocument();
     expect(screen.getByLabelText('Head Armor Type')).toBeInTheDocument();
   });
 
@@ -42,7 +42,7 @@ describe('FeatherInput', () => {
 
     render(<FeatherInput {...defaultProps} onEnabledChange={onEnabledChange} />);
 
-    const checkbox = screen.getByLabelText('Enable Feathered Head Gear');
+    const checkbox = screen.getByLabelText("I'm using Head armor with Feather");
     await user.click(checkbox);
 
     expect(onEnabledChange).toHaveBeenCalledWith(true);
@@ -56,7 +56,7 @@ describe('FeatherInput', () => {
     });
   });
 
-  it('should clamp feather value to maximum 200', async () => {
+  it('should clamp feather value to maximum 30', async () => {
     const user = userEvent.setup();
     const onFeatherValueChange = vi.fn();
 
@@ -68,17 +68,17 @@ describe('FeatherInput', () => {
       />
     );
 
-    const input = screen.getByLabelText('Feather Value (0-200)');
+    const input = screen.getByLabelText('Feather Value (0.1-30)');
 
     // Type a value that should be clamped
-    await user.type(input, '250');
+    await user.type(input, '50');
 
-    // Check that all onChange calls have clamped values (none exceed 200)
+    // Check that all onChange calls have clamped values (none exceed 30)
     const calls = onFeatherValueChange.mock.calls;
     expect(calls.length).toBeGreaterThan(0);
     calls.forEach(call => {
-      expect(call[0]).toBeLessThanOrEqual(200);
-      expect(call[0]).toBeGreaterThanOrEqual(0);
+      expect(call[0]).toBeLessThanOrEqual(30);
+      expect(call[0]).toBeGreaterThanOrEqual(0.1);
     });
   });
 
@@ -103,8 +103,8 @@ describe('FeatherInput', () => {
   it('should disable inputs when disabled prop is true', () => {
     render(<FeatherInput {...defaultProps} enabled={true} disabled={true} />);
 
-    expect(screen.getByLabelText('Enable Feathered Head Gear')).toBeDisabled();
-    expect(screen.getByLabelText('Feather Value (0-200)')).toBeDisabled();
+    expect(screen.getByLabelText("I'm using Head armor with Feather")).toBeDisabled();
+    expect(screen.getByLabelText('Feather Value (0.1-30)')).toBeDisabled();
     expect(screen.getByLabelText('Head Armor Type')).toBeDisabled();
   });
 });

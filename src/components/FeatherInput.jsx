@@ -22,7 +22,7 @@ export default function FeatherInput({
           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:cursor-not-allowed"
         />
         <label htmlFor="feather-enabled" className="ml-2 text-sm font-medium text-gray-700">
-          Enable Feathered Head Gear
+          I'm using Head armor with Feather
         </label>
       </div>
 
@@ -30,18 +30,18 @@ export default function FeatherInput({
         <div className="space-y-3 pl-6 border-l-2 border-gray-200">
           <div>
             <label htmlFor="feather-value" className="block text-sm font-medium text-gray-700 mb-1">
-              Feather Value (0-200)
+              Feather Value (0.1-30)
             </label>
             <input
               type="number"
               id="feather-value"
-              min="0"
-              max="200"
+              min="0.1"
+              max="30"
               step="0.1"
               value={featherValue}
               onChange={(e) => {
-                const value = parseFloat(e.target.value) || 0;
-                onFeatherValueChange(Math.max(0, Math.min(200, value)));
+                const value = parseFloat(e.target.value) || 0.1;
+                onFeatherValueChange(Math.max(0.1, Math.min(30, value)));
               }}
               disabled={disabled}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"

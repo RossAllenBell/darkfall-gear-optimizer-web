@@ -7,6 +7,7 @@ export default function EncumbranceInput({
   range,
   datasetResults,
   headArmorType,
+  featherEnabled,
   disabled
 }) {
   const [inputValue, setInputValue] = useState(value.toString());
@@ -52,7 +53,7 @@ export default function EncumbranceInput({
   return (
     <div className="p-4 border rounded-lg bg-white shadow-sm">
       <label htmlFor="encumbrance" className="block text-sm font-medium text-gray-700 mb-2">
-        Target Encumbrance
+        {featherEnabled ? 'Target Encumbrance after Feather applied' : 'Target Encumbrance'}
       </label>
 
       <div className="text-xs text-gray-500 mb-3">

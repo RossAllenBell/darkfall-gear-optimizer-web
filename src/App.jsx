@@ -57,7 +57,9 @@ function App() {
               enabled={featherEnabled}
               onEnabledChange={(enabled) => {
                 setFeatherEnabled(enabled);
-                if (!enabled) {
+                if (enabled) {
+                  setFeatherValue(0.1);
+                } else {
                   setFeatherValue(0);
                   setHeadArmorType(null);
                 }
@@ -75,6 +77,7 @@ function App() {
               range={encumbranceRange}
               datasetResults={datasetResults}
               headArmorType={featherEnabled ? headArmorType : null}
+              featherEnabled={featherEnabled}
               disabled={!hasDataset || !isFeatherReady || loading}
             />
           </div>

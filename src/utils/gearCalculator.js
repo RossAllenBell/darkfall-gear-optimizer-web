@@ -31,7 +31,6 @@ export function findOptimalGear(results, targetEncumbrance, featherValue, headAr
   }
 
   // Find the best match: highest protection where encumbrance <= adjustedTarget
-  // Results are assumed to be sorted by encumbrance ascending
   let bestMatch = null;
   let bestProtection = -1;
 
@@ -41,9 +40,6 @@ export function findOptimalGear(results, targetEncumbrance, featherValue, headAr
         bestProtection = result.totalProtection;
         bestMatch = result;
       }
-    } else {
-      // Since results are sorted by encumbrance, we can stop early
-      break;
     }
   }
 
