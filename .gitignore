@@ -17,6 +17,9 @@ coverage
 playwright-report
 test-results
 
+# Dev server
+.dev-server.pid
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
