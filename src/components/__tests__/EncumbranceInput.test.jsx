@@ -109,8 +109,8 @@ describe('EncumbranceInput', () => {
 
   it('should render preset buttons (20, 30, 40)', () => {
     render(<EncumbranceInput {...defaultProps} />);
-    expect(screen.getByRole('button', { name: '20' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '30' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '20 (Magic)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '30 (Archery)' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '40' })).toBeInTheDocument();
   });
 
@@ -119,7 +119,7 @@ describe('EncumbranceInput', () => {
     const onChange = vi.fn();
     render(<EncumbranceInput {...defaultProps} onChange={onChange} />);
 
-    await user.click(screen.getByRole('button', { name: '30' }));
+    await user.click(screen.getByRole('button', { name: '30 (Archery)' }));
     expect(onChange).toHaveBeenCalledWith(30);
   });
 
@@ -131,8 +131,8 @@ describe('EncumbranceInput', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: '20' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '30' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '20 (Magic)' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '30 (Archery)' })).toBeEnabled();
     expect(screen.getByRole('button', { name: '40' })).toBeDisabled();
   });
 
@@ -142,8 +142,8 @@ describe('EncumbranceInput', () => {
     expect(screen.getByLabelText('Target Encumbrance')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Decrease by 0.1' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Increase by 0.1' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '20' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '30' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '20 (Magic)' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '30 (Archery)' })).toBeDisabled();
     expect(screen.getByRole('button', { name: '40' })).toBeDisabled();
   });
 

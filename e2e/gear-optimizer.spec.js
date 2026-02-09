@@ -106,7 +106,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Click the "30" preset button
-    await page.getByRole('button', { name: '30', exact: true }).click();
+    await page.getByRole('button', { name: '30 (Archery)' }).click();
     await page.waitForTimeout(500);
 
     // Verify the input value changed to 30
@@ -192,7 +192,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Set encumbrance to 20 to get non-zero armor
-    await page.getByRole('button', { name: '20', exact: true }).click();
+    await page.getByRole('button', { name: '20 (Magic)' }).click();
     await page.waitForTimeout(500);
 
     // The stats table should contain actual numeric values (not all dashes)
@@ -252,7 +252,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Set high encumbrance to get Dragon armor
-    await page.getByRole('button', { name: '30', exact: true }).click();
+    await page.getByRole('button', { name: '30 (Archery)' }).click();
     await page.waitForTimeout(500);
 
     // The stats table should be visible with data

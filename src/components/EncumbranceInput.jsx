@@ -44,10 +44,14 @@ export default function EncumbranceInput({
     ? getAvailableEncumbrances(datasetResults, headArmorType)
     : [];
 
-  const presets = [20, 30, 40];
+  const presets = [
+    { value: 20, label: '20 (Magic)' },
+    { value: 30, label: '30 (Archery)' },
+    { value: 40, label: '40' }
+  ];
   const presetAvailability = presets.map(preset => ({
-    value: preset,
-    available: preset >= range.min && preset <= range.max
+    ...preset,
+    available: preset.value >= range.min && preset.value <= range.max
   }));
 
   return (
@@ -96,7 +100,7 @@ export default function EncumbranceInput({
       </div>
 
       <div className="flex gap-2">
-        {presetAvailability.map(({ value: preset, available }) => (
+        {presetAvailability.map(({ value: preset, label, available }) => (
           <button
             key={preset}
             onClick={() => handlePresetClick(preset)}
@@ -107,7 +111,7 @@ export default function EncumbranceInput({
                 : 'border-gray-200 bg-gray-100 cursor-not-allowed text-gray-400'
             }`}
           >
-            {preset}
+            {label}
           </button>
         ))}
       </div>

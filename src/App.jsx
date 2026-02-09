@@ -100,15 +100,13 @@ function App() {
           )}
         </div>
 
-        {/* Armor Stats Table - Full width below the two-column layout */}
+        {/* Armor Stats Table - Below the two-column layout, sized to content */}
         {hasDataset && realStats && (
-          <div className="mt-6 p-4 border rounded-lg bg-white shadow-sm">
+          <div className="mt-6 inline-block p-4 border rounded-lg bg-white shadow-sm">
             <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
               Armor Stats
             </h3>
-            <div className="overflow-x-auto">
-              <ArmorStatsTable realStats={realStats} />
-            </div>
+            <ArmorStatsTable realStats={realStats} />
           </div>
         )}
       </div>
