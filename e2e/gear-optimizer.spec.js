@@ -168,7 +168,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.goto('/');
 
     // Select protection type and armor tier
-    await page.selectOption('select#dataset', { label: 'Piercing' });
+    await page.selectOption('select#dataset', { label: 'Pierce (Arrow)' });
     await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 

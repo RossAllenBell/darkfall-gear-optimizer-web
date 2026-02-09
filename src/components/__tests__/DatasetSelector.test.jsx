@@ -8,7 +8,7 @@ describe('DatasetSelector', () => {
     protectionTypes: [
       { id: 'physical', displayName: 'Physical' },
       { id: 'magic', displayName: 'Magic' },
-      { id: 'piercing', displayName: 'Piercing' }
+      { id: 'piercing', displayName: 'Pierce (Arrow)' }
     ]
   };
 
@@ -29,7 +29,7 @@ describe('DatasetSelector', () => {
     expect(screen.getByLabelText('I would like to optimize for protection against:')).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Physical' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Magic' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Piercing' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Pierce (Arrow)' })).toBeInTheDocument();
   });
 
   it('should call onSelect when a protection type is selected', async () => {

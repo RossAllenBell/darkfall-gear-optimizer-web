@@ -60,7 +60,7 @@ function App() {
               config={config}
               selectedTier={selectedArmorTier}
               onSelect={setSelectedArmorTier}
-              disabled={loading}
+              disabled={loading || !selectedProtectionType}
             />
 
             <FeatherInput

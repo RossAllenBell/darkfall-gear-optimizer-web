@@ -2,7 +2,7 @@
   "protectionTypes": [
     { "id": "physical", "displayName": "Physical" },
     { "id": "magic", "displayName": "Magic" },
-    { "id": "piercing", "displayName": "Piercing" },
+    { "id": "piercing", "displayName": "Pierce (Arrow)" },
     { "id": "physical66-magic33", "displayName": "66% Physical, 33% Magic" },
     { "id": "physical50-magic50", "displayName": "50% Physical, 50% Magic" },
     { "id": "physical33-magic66", "displayName": "33% Physical, 66% Magic" }
