@@ -3,15 +3,25 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useGearOptimizer } from '../useGearOptimizer';
 
 const mockConfig = {
-  datasets: [
-    { id: 'slashing100', displayName: '100% Slashing', filePath: '/darkfall-gear-optimizer-web/results-slashing.json' },
-    { id: 'fire-slash', displayName: '50/50 Fire Slashing', filePath: '/darkfall-gear-optimizer-web/results-fire-slash.json' },
+  protectionTypes: [
+    { id: 'physical', displayName: 'Physical' },
+    { id: 'magic', displayName: 'Magic' },
+  ],
+  armorAccessTiers: [
+    { id: 'common', displayName: 'Common' },
+    { id: 'all', displayName: 'All (incl. Dragon)' },
   ],
   armorTypes: ['NoArmor', 'Cloth', 'Bone', 'Leather', 'Plate'],
 };
 
+const mockCsvText = `Type,Slot,Name,Skill,Mastery,Cloth,Bone,Leather,Iron,Selentine,Theyril,Leenspar,Gold,Encumbrance,Bludgeoning,Piercing,Slashing,Acid,Cold,Fire,Holy,Lightning,Unholy,Impact,FiendClaw,Ratka,DragonScales
+Bone,Head,Helmet,100,0,0,4,3,0,0,0,0,11,1.5,0.6,0.6,0.6,1.16,1.16,1.16,1.4,1.16,1.4,0.37,0,0,0
+Bone,Arms,Vambraces,100,0,0,2,2,0,0,0,0,9,1.5,0.3,0.3,0.3,0.56,0.56,0.56,0.68,0.56,0.68,0.18,0,0,0
+Leather,Chest,Cuirass,50,0,0,0,12,0,0,0,0,0,5.75,1.15,1.15,1.15,1.51,1.51,1.51,1.51,1.51,1.51,0.86,0,0,0
+Cloth,Legs,Leggings,1,0,1,0,0,0,0,0,0,0,0.75,0.15,0.15,0.15,0.19,0.19,0.19,0.19,0.19,0.19,0.11,0,0,0`;
+
 const mockDataset = {
-  metadata: { dataset: 'minimal', protectionWeights: { Slashing: 1.0 } },
+  metadata: { dataset: 'complete', protectionWeights: { Slashing: 1.0 } },
   results: [
     {
       rank: 1,
@@ -69,7 +79,13 @@ describe('useGearOptimizer', () => {
           json: () => Promise.resolve(mockConfig),
         });
       }
-      if (url.includes('results-')) {
+      if (url.includes('armor-data-complete.csv')) {
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(mockCsvText),
+        });
+      }
+      if (url.includes('results-complete-')) {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve(mockDataset),
@@ -79,7 +95,7 @@ describe('useGearOptimizer', () => {
     });
   }
 
-  it('should load config on mount', async () => {
+  it('should load config and armor data on mount', async () => {
     mockFetchResponses();
     const { result } = renderHook(() => useGearOptimizer());
 
@@ -108,7 +124,7 @@ describe('useGearOptimizer', () => {
     expect(result.current.config).toBeNull();
   });
 
-  it('should start with no dataset selected', async () => {
+  it('should start with no selections', async () => {
     mockFetchResponses();
     const { result } = renderHook(() => useGearOptimizer());
 
@@ -116,12 +132,30 @@ describe('useGearOptimizer', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(result.current.selectedDataset).toBeNull();
+    expect(result.current.selectedProtectionType).toBeNull();
+    expect(result.current.selectedArmorTier).toBeNull();
     expect(result.current.datasetResults).toBeNull();
     expect(result.current.optimalGear).toBeNull();
   });
 
-  it('should load dataset results when a dataset is selected', async () => {
+  it('should not load dataset until both protection type and armor tier are selected', async () => {
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    await waitFor(() => {
+      expect(result.current.config).not.toBeNull();
+    });
+
+    // Select only protection type
+    act(() => {
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+    });
+
+    // Should not have loaded dataset
+    expect(result.current.datasetResults).toBeNull();
+  });
+
+  it('should load dataset when both selections are made', async () => {
     mockFetchResponses();
     const { result } = renderHook(() => useGearOptimizer());
 
@@ -130,7 +164,8 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(mockConfig.datasets[0]);
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
     });
 
     await waitFor(() => {
@@ -138,6 +173,28 @@ describe('useGearOptimizer', () => {
     });
 
     expect(result.current.datasetResults).toEqual(mockDataset.results);
+  });
+
+  it('should construct correct file path from selections', async () => {
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    await waitFor(() => {
+      expect(result.current.config).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[1]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.datasetResults).not.toBeNull();
+    });
+
+    // Check that fetch was called with the right path
+    const datasetCall = fetchMock.mock.calls.find(c => c[0].includes('results-complete-'));
+    expect(datasetCall[0]).toBe('/darkfall-gear-optimizer-web/results-complete-all-physical.json');
   });
 
   it('should set encumbrance to dataset min when dataset loads', async () => {
@@ -149,7 +206,8 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(mockConfig.datasets[0]);
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
     });
 
     await waitFor(() => {
@@ -168,7 +226,8 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(mockConfig.datasets[0]);
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
     });
 
     await waitFor(() => {
@@ -177,6 +236,28 @@ describe('useGearOptimizer', () => {
 
     expect(result.current.optimalGear).not.toBeNull();
     expect(result.current.optimalGear.encumbrance).toBe(19.15);
+  });
+
+  it('should compute realStats when optimal gear is available', async () => {
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    await waitFor(() => {
+      expect(result.current.config).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.datasetResults).not.toBeNull();
+    });
+
+    expect(result.current.realStats).not.toBeNull();
+    expect(result.current.realStats.slots).toBeDefined();
+    expect(result.current.realStats.totals).toBeDefined();
   });
 
   it('should update optimal gear when target encumbrance changes', async () => {
@@ -188,7 +269,8 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(mockConfig.datasets[0]);
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
     });
 
     await waitFor(() => {
@@ -213,7 +295,8 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(mockConfig.datasets[0]);
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
     });
 
     await waitFor(() => {
@@ -235,7 +318,7 @@ describe('useGearOptimizer', () => {
     expect(result.current.encumbranceRange).toEqual({ min: 0, max: 200 });
   });
 
-  it('should clear dataset results when selection is set to null', async () => {
+  it('should clear dataset results when selection is cleared', async () => {
     mockFetchResponses();
     const { result } = renderHook(() => useGearOptimizer());
 
@@ -244,7 +327,8 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(mockConfig.datasets[0]);
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
     });
 
     await waitFor(() => {
@@ -252,7 +336,7 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(null);
+      result.current.setSelectedProtectionType(null);
     });
 
     expect(result.current.datasetResults).toBeNull();
@@ -281,7 +365,8 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(mockConfig.datasets[0]);
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
     });
 
     await waitFor(() => {
@@ -306,6 +391,12 @@ describe('useGearOptimizer', () => {
           json: () => Promise.resolve(mockConfig),
         });
       }
+      if (url.includes('armor-data-complete.csv')) {
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(mockCsvText),
+        });
+      }
       return Promise.resolve({ ok: false });
     });
 
@@ -316,7 +407,8 @@ describe('useGearOptimizer', () => {
     });
 
     act(() => {
-      result.current.setSelectedDataset(mockConfig.datasets[0]);
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
     });
 
     await waitFor(() => {
@@ -324,5 +416,57 @@ describe('useGearOptimizer', () => {
     });
 
     expect(result.current.error).toBe('Failed to load dataset');
+  });
+
+  it('should not load dataset when only armor tier is selected', async () => {
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    await waitFor(() => {
+      expect(result.current.config).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
+    });
+
+    expect(result.current.datasetResults).toBeNull();
+    expect(result.current.optimalGear).toBeNull();
+  });
+
+  it('should clear dataset when armor tier is deselected', async () => {
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    await waitFor(() => {
+      expect(result.current.config).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.datasetResults).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.setSelectedArmorTier(null);
+    });
+
+    expect(result.current.datasetResults).toBeNull();
+    expect(result.current.optimalGear).toBeNull();
+  });
+
+  it('should return null realStats when no dataset is loaded', async () => {
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    await waitFor(() => {
+      expect(result.current.config).not.toBeNull();
+    });
+
+    expect(result.current.realStats).toBeNull();
   });
 });

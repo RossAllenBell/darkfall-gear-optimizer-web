@@ -16,6 +16,56 @@ describe('ResultsDisplay', () => {
     }
   };
 
+  const mockRealStats = {
+    slots: [
+      {
+        label: 'Head',
+        armorType: 'Bone',
+        count: 1,
+        encumbrance: 1.5,
+        stats: {
+          Bludgeoning: 0.6, Piercing: 0.6, Slashing: 0.6,
+          Acid: 1.16, Cold: 1.16, Fire: 1.16, Holy: 1.4,
+          Lightning: 1.16, Unholy: 1.4, Impact: 0.37,
+          FiendClaw: 0, Ratka: 0, DragonScales: 0
+        }
+      },
+      {
+        label: 'Chest',
+        armorType: 'Leather',
+        count: 1,
+        encumbrance: 5.75,
+        stats: {
+          Bludgeoning: 1.15, Piercing: 1.15, Slashing: 1.15,
+          Acid: 1.51, Cold: 1.51, Fire: 1.51, Holy: 1.51,
+          Lightning: 1.51, Unholy: 1.51, Impact: 0.86,
+          FiendClaw: 0, Ratka: 0, DragonScales: 0
+        }
+      },
+      {
+        label: 'Bone x5',
+        armorType: 'Bone',
+        count: 5,
+        encumbrance: 7.5,
+        stats: {
+          Bludgeoning: 1.5, Piercing: 1.5, Slashing: 1.5,
+          Acid: 2.8, Cold: 2.8, Fire: 2.8, Holy: 3.4,
+          Lightning: 2.8, Unholy: 3.4, Impact: 0.9,
+          FiendClaw: 0, Ratka: 0, DragonScales: 0
+        }
+      }
+    ],
+    totals: {
+      encumbrance: 14.75,
+      stats: {
+        Bludgeoning: 3.25, Piercing: 3.25, Slashing: 3.25,
+        Acid: 5.47, Cold: 5.47, Fire: 5.47, Holy: 6.31,
+        Lightning: 5.47, Unholy: 6.31, Impact: 2.13,
+        FiendClaw: 0, Ratka: 0, DragonScales: 0
+      }
+    }
+  };
+
   it('should show loading state', () => {
     render(
       <ResultsDisplay
@@ -90,13 +140,13 @@ describe('ResultsDisplay', () => {
         loading={false}
         error={null}
         hasDataset={true}
+        realStats={mockRealStats}
       />
     );
 
     expect(screen.getByText('Optimal Gear Configuration')).toBeInTheDocument();
     expect(screen.getByText('Fixed Slots')).toBeInTheDocument();
     expect(screen.getByText('Interchangeable Slots (7 total)')).toBeInTheDocument();
-    expect(screen.getByText('Statistics')).toBeInTheDocument();
   });
 
   it('should display fixed slots correctly', () => {
@@ -106,10 +156,10 @@ describe('ResultsDisplay', () => {
         loading={false}
         error={null}
         hasDataset={true}
+        realStats={mockRealStats}
       />
     );
 
-    // Use getAllByText since armor types may appear in multiple places
     const boneElements = screen.getAllByText('Bone');
     expect(boneElements.length).toBeGreaterThan(0);
 
@@ -119,6 +169,80 @@ describe('ResultsDisplay', () => {
     expect(screen.getByText('Studded')).toBeInTheDocument();
   });
 
+  it('should display armor stats table when realStats is provided', () => {
+    render(
+      <ResultsDisplay
+        optimalGear={mockOptimalGear}
+        loading={false}
+        error={null}
+        hasDataset={true}
+        realStats={mockRealStats}
+      />
+    );
+
+    expect(screen.getByText('Armor Stats')).toBeInTheDocument();
+    expect(screen.getByTestId('armor-stats-table')).toBeInTheDocument();
+
+    // Check column headers
+    expect(screen.getByText('Enc')).toBeInTheDocument();
+    expect(screen.getByText('Blud')).toBeInTheDocument();
+    expect(screen.getByText('Slash')).toBeInTheDocument();
+    expect(screen.getByText('Fire')).toBeInTheDocument();
+
+    // Check totals row
+    expect(screen.getByText('Total')).toBeInTheDocument();
+  });
+
+  it('should display slot labels in stats table', () => {
+    render(
+      <ResultsDisplay
+        optimalGear={mockOptimalGear}
+        loading={false}
+        error={null}
+        hasDataset={true}
+        realStats={mockRealStats}
+      />
+    );
+
+    expect(screen.getByText('Head')).toBeInTheDocument();
+    expect(screen.getByText('Chest')).toBeInTheDocument();
+    expect(screen.getByText('Bone x5')).toBeInTheDocument();
+  });
+
+  it('should display dash for zero stats', () => {
+    render(
+      <ResultsDisplay
+        optimalGear={mockOptimalGear}
+        loading={false}
+        error={null}
+        hasDataset={true}
+        realStats={mockRealStats}
+      />
+    );
+
+    // FiendClaw, Ratka, DragonScales are all 0 -> should show '-'
+    const dashes = screen.getAllByText('-');
+    expect(dashes.length).toBeGreaterThan(0);
+  });
+
+  it('should show fallback statistics when realStats is null', () => {
+    render(
+      <ResultsDisplay
+        optimalGear={mockOptimalGear}
+        loading={false}
+        error={null}
+        hasDataset={true}
+        realStats={null}
+      />
+    );
+
+    expect(screen.getByText('Statistics')).toBeInTheDocument();
+    expect(screen.getByText('Total Protection')).toBeInTheDocument();
+    expect(screen.getByText('5.44')).toBeInTheDocument();
+    expect(screen.getByText('Actual Encumbrance')).toBeInTheDocument();
+    expect(screen.getByText('19.15')).toBeInTheDocument();
+  });
+
   it('should display interchangeable slots with counts', () => {
     render(
       <ResultsDisplay
@@ -126,26 +250,11 @@ describe('ResultsDisplay', () => {
         loading={false}
         error={null}
         hasDataset={true}
+        realStats={mockRealStats}
       />
     );
 
     expect(screen.getByText('×5')).toBeInTheDocument();
     expect(screen.getByText('×2')).toBeInTheDocument();
-  });
-
-  it('should display statistics', () => {
-    render(
-      <ResultsDisplay
-        optimalGear={mockOptimalGear}
-        loading={false}
-        error={null}
-        hasDataset={true}
-      />
-    );
-
-    expect(screen.getByText('Total Protection')).toBeInTheDocument();
-    expect(screen.getByText('5.44')).toBeInTheDocument();
-    expect(screen.getByText('Actual Encumbrance')).toBeInTheDocument();
-    expect(screen.getByText('19.15')).toBeInTheDocument();
   });
 });

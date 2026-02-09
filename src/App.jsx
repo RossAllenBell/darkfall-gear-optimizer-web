@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGearOptimizer } from './hooks/useGearOptimizer';
 import DatasetSelector from './components/DatasetSelector';
+import ArmorAccessSelector from './components/ArmorAccessSelector';
 import FeatherInput from './components/FeatherInput';
 import EncumbranceInput from './components/EncumbranceInput';
 import ResultsDisplay from './components/ResultsDisplay';
@@ -8,8 +9,10 @@ import ResultsDisplay from './components/ResultsDisplay';
 function App() {
   const {
     config,
-    selectedDataset,
-    setSelectedDataset,
+    selectedProtectionType,
+    setSelectedProtectionType,
+    selectedArmorTier,
+    setSelectedArmorTier,
     datasetResults,
     loading,
     error,
@@ -22,10 +25,11 @@ function App() {
     targetEncumbrance,
     setTargetEncumbrance,
     optimalGear,
-    encumbranceRange
+    encumbranceRange,
+    realStats
   } = useGearOptimizer();
 
-  const hasDataset = !!selectedDataset && !!datasetResults;
+  const hasDataset = !!selectedProtectionType && !!selectedArmorTier && !!datasetResults;
   const isFeatherReady = !featherEnabled || (featherEnabled && headArmorType);
 
   return (
@@ -47,8 +51,15 @@ function App() {
           <div className="space-y-4">
             <DatasetSelector
               config={config}
-              selectedDataset={selectedDataset}
-              onSelect={setSelectedDataset}
+              selectedProtectionType={selectedProtectionType}
+              onSelect={setSelectedProtectionType}
+              disabled={loading}
+            />
+
+            <ArmorAccessSelector
+              config={config}
+              selectedTier={selectedArmorTier}
+              onSelect={setSelectedArmorTier}
               disabled={loading}
             />
 
@@ -92,6 +103,7 @@ function App() {
                 hasDataset={hasDataset}
                 featherEnabled={featherEnabled}
                 headArmorType={headArmorType}
+                realStats={realStats}
               />
             </div>
           )}

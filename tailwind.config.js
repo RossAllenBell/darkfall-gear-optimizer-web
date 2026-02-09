@@ -21,7 +21,9 @@ export default {
         'armor-scale': '#708090',
         'armor-plate': '#808080',
         'armor-fullplate': '#696969',
+        'armor-padded': '#f0e68c',
         'armor-infernal': '#dc143c',
+        'armor-dragon': '#8b0000',
         'armor-phantasmal': '#9370db',
         'armor-wyvern': '#2e8b57',
       }

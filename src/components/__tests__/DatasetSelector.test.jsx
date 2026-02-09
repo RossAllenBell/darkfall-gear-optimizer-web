@@ -5,75 +5,69 @@ import DatasetSelector from '../DatasetSelector';
 
 describe('DatasetSelector', () => {
   const mockConfig = {
-    datasets: [
-      {
-        id: 'fire100-slashing100',
-        displayName: '50% Fire, 50% Slashing',
-        filePath: '/path1.json'
-      },
-      {
-        id: 'slashing100',
-        displayName: '100% Slashing',
-        filePath: '/path2.json'
-      }
+    protectionTypes: [
+      { id: 'physical', displayName: 'Physical' },
+      { id: 'magic', displayName: 'Magic' },
+      { id: 'piercing', displayName: 'Piercing' }
     ]
   };
 
   it('should show loading state when config is null', () => {
-    render(<DatasetSelector config={null} selectedDataset={null} onSelect={vi.fn()} />);
+    render(<DatasetSelector config={null} selectedProtectionType={null} onSelect={vi.fn()} />);
     expect(screen.getByText('Loading datasets...')).toBeInTheDocument();
   });
 
-  it('should render dataset options', () => {
+  it('should render protection type options', () => {
     render(
       <DatasetSelector
         config={mockConfig}
-        selectedDataset={null}
+        selectedProtectionType={null}
         onSelect={vi.fn()}
       />
     );
 
     expect(screen.getByLabelText('Protection Type')).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: '50% Fire, 50% Slashing' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: '100% Slashing' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Physical' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Magic' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Piercing' })).toBeInTheDocument();
   });
 
-  it('should call onSelect when a dataset is selected', async () => {
+  it('should call onSelect when a protection type is selected', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
     render(
       <DatasetSelector
         config={mockConfig}
-        selectedDataset={null}
+        selectedProtectionType={null}
         onSelect={onSelect}
       />
     );
 
     const select = screen.getByLabelText('Protection Type');
-    await user.selectOptions(select, 'slashing100');
+    await user.selectOptions(select, 'magic');
 
-    expect(onSelect).toHaveBeenCalledWith(mockConfig.datasets[1]);
+    expect(onSelect).toHaveBeenCalledWith(mockConfig.protectionTypes[1]);
   });
 
-  it('should show selected dataset', () => {
+  it('should show selected protection type', () => {
     render(
       <DatasetSelector
         config={mockConfig}
-        selectedDataset={mockConfig.datasets[0]}
+        selectedProtectionType={mockConfig.protectionTypes[0]}
         onSelect={vi.fn()}
       />
     );
 
     const select = screen.getByLabelText('Protection Type');
-    expect(select).toHaveValue('fire100-slashing100');
+    expect(select).toHaveValue('physical');
   });
 
   it('should be disabled when disabled prop is true', () => {
     render(
       <DatasetSelector
         config={mockConfig}
-        selectedDataset={null}
+        selectedProtectionType={null}
         onSelect={vi.fn()}
         disabled={true}
       />
@@ -81,5 +75,23 @@ describe('DatasetSelector', () => {
 
     const select = screen.getByLabelText('Protection Type');
     expect(select).toBeDisabled();
+  });
+
+  it('should call onSelect with null when empty option is selected', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(
+      <DatasetSelector
+        config={mockConfig}
+        selectedProtectionType={mockConfig.protectionTypes[0]}
+        onSelect={onSelect}
+      />
+    );
+
+    const select = screen.getByLabelText('Protection Type');
+    await user.selectOptions(select, '');
+
+    expect(onSelect).toHaveBeenCalledWith(null);
   });
 });

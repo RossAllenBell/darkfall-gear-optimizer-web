@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
-import { findOptimalGear, getEncumbranceRange } from '../utils/gearCalculator';
+import { useState, useEffect, useMemo } from 'react';
+import { findOptimalGear, getEncumbranceRange, parseGearData, parseArmorCsv, calculateRealStats } from '../utils/gearCalculator';
 
 /**
  * Custom hook for managing gear optimizer state and data fetching
  */
 export function useGearOptimizer() {
   const [config, setConfig] = useState(null);
-  const [selectedDataset, setSelectedDataset] = useState(null);
+  const [selectedProtectionType, setSelectedProtectionType] = useState(null);
+  const [selectedArmorTier, setSelectedArmorTier] = useState(null);
   const [datasetResults, setDatasetResults] = useState(null);
+  const [armorData, setArmorData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,15 +21,21 @@ export function useGearOptimizer() {
   // Encumbrance target
   const [targetEncumbrance, setTargetEncumbrance] = useState(20);
 
-  // Load config on mount
+  // Load config and armor CSV on mount
   useEffect(() => {
-    fetch('/darkfall-gear-optimizer-web/config.json')
-      .then(res => {
+    Promise.all([
+      fetch('/darkfall-gear-optimizer-web/config.json').then(res => {
         if (!res.ok) throw new Error('Failed to load configuration');
         return res.json();
+      }),
+      fetch('/darkfall-gear-optimizer-web/armor-data-complete.csv').then(res => {
+        if (!res.ok) throw new Error('Failed to load armor data');
+        return res.text();
       })
-      .then(data => {
-        setConfig(data);
+    ])
+      .then(([configData, csvText]) => {
+        setConfig(configData);
+        setArmorData(parseArmorCsv(csvText));
         setLoading(false);
       })
       .catch(err => {
@@ -36,9 +44,9 @@ export function useGearOptimizer() {
       });
   }, []);
 
-  // Load dataset when selected
+  // Load dataset when protection type or armor tier changes
   useEffect(() => {
-    if (!selectedDataset) {
+    if (!selectedProtectionType || !selectedArmorTier) {
       setDatasetResults(null);
       return;
     }
@@ -46,7 +54,9 @@ export function useGearOptimizer() {
     setLoading(true);
     setError(null);
 
-    fetch(selectedDataset.filePath)
+    const filePath = `/darkfall-gear-optimizer-web/results-complete-${selectedArmorTier.id}-${selectedProtectionType.id}.json`;
+
+    fetch(filePath)
       .then(res => {
         if (!res.ok) throw new Error('Failed to load dataset');
         return res.json();
@@ -68,7 +78,7 @@ export function useGearOptimizer() {
         setError(err.message);
         setLoading(false);
       });
-  }, [selectedDataset]);
+  }, [selectedProtectionType, selectedArmorTier]);
 
   // Update encumbrance range when feather config changes
   useEffect(() => {
@@ -105,10 +115,19 @@ export function useGearOptimizer() {
       )
     : { min: 0, max: 200 };
 
+  // Calculate real stats from armor CSV data
+  const realStats = useMemo(() => {
+    if (!optimalGear || !armorData) return null;
+    const parsedGear = parseGearData(optimalGear);
+    return calculateRealStats(parsedGear, armorData);
+  }, [optimalGear, armorData]);
+
   return {
     config,
-    selectedDataset,
-    setSelectedDataset,
+    selectedProtectionType,
+    setSelectedProtectionType,
+    selectedArmorTier,
+    setSelectedArmorTier,
     datasetResults,
     loading,
     error,
@@ -121,6 +140,7 @@ export function useGearOptimizer() {
     targetEncumbrance,
     setTargetEncumbrance,
     optimalGear,
-    encumbranceRange
+    encumbranceRange,
+    realStats
   };
 }
