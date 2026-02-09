@@ -6,10 +6,10 @@ import ArmorAccessSelector from '../ArmorAccessSelector';
 describe('ArmorAccessSelector', () => {
   const mockConfig = {
     armorAccessTiers: [
-      { id: 'common', displayName: 'Common' },
-      { id: 'common+fp', displayName: 'Common + Full Plate' },
-      { id: 'common+fp+inf', displayName: 'Common + Full Plate + Infernal' },
-      { id: 'all', displayName: 'All (incl. Dragon)' }
+      { id: 'common', displayName: 'Bone and Plate' },
+      { id: 'common+fp', displayName: 'Full Plate' },
+      { id: 'common+fp+inf', displayName: 'Infernal' },
+      { id: 'all', displayName: 'Dragon' }
     ]
   };
 
@@ -27,11 +27,11 @@ describe('ArmorAccessSelector', () => {
       />
     );
 
-    expect(screen.getByLabelText('Armor Access')).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Common' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Common + Full Plate' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Common + Full Plate + Infernal' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'All (incl. Dragon)' })).toBeInTheDocument();
+    expect(screen.getByLabelText('I have access to everything up to:')).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Bone and Plate' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Full Plate' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Infernal' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Dragon' })).toBeInTheDocument();
   });
 
   it('should call onSelect when a tier is selected', async () => {
@@ -46,7 +46,7 @@ describe('ArmorAccessSelector', () => {
       />
     );
 
-    const select = screen.getByLabelText('Armor Access');
+    const select = screen.getByLabelText('I have access to everything up to:');
     await user.selectOptions(select, 'common+fp');
 
     expect(onSelect).toHaveBeenCalledWith(mockConfig.armorAccessTiers[1]);
@@ -61,7 +61,7 @@ describe('ArmorAccessSelector', () => {
       />
     );
 
-    const select = screen.getByLabelText('Armor Access');
+    const select = screen.getByLabelText('I have access to everything up to:');
     expect(select).toHaveValue('common');
   });
 
@@ -75,7 +75,7 @@ describe('ArmorAccessSelector', () => {
       />
     );
 
-    const select = screen.getByLabelText('Armor Access');
+    const select = screen.getByLabelText('I have access to everything up to:');
     expect(select).toBeDisabled();
   });
 
@@ -91,7 +91,7 @@ describe('ArmorAccessSelector', () => {
       />
     );
 
-    const select = screen.getByLabelText('Armor Access');
+    const select = screen.getByLabelText('I have access to everything up to:');
     await user.selectOptions(select, '');
 
     expect(onSelect).toHaveBeenCalledWith(null);

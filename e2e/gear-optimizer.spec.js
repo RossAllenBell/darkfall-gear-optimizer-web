@@ -26,7 +26,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.selectOption('select#dataset', { label: 'Physical' });
 
     // Select armor access tier
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
 
     // Wait for data to load
     await page.waitForTimeout(1000);
@@ -42,12 +42,12 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select protection type and armor tier
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     // Verify stats table headers
     await expect(page.getByText('Enc')).toBeVisible();
-    await expect(page.getByText('Blud')).toBeVisible();
+    await expect(page.getByText('Bludg')).toBeVisible();
     await expect(page.getByText('Slash')).toBeVisible();
 
     // Verify totals row
@@ -59,7 +59,7 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select protection type and armor tier
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     // Click the +0.1 button several times
@@ -76,7 +76,7 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select protection type and armor tier
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     // Enable feather mode
@@ -102,7 +102,7 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select protection type and armor tier
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     // Click the "30" preset button
@@ -136,7 +136,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.goto('/');
 
     // Select only armor tier
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(500);
 
     // Should not show results
@@ -151,13 +151,13 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select protection type and armor tier
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
 
     // Change armor tier
-    await page.selectOption('select#armor-tier', { label: 'All (incl. Dragon)' });
+    await page.selectOption('select#armor-tier', { label: 'Dragon' });
     await page.waitForTimeout(1000);
 
     // Results should still be visible (different data may load)
@@ -169,18 +169,18 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select protection type and armor tier
     await page.selectOption('select#dataset', { label: 'Piercing' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     // Enable feather mode
     await page.check('input#feather-enabled');
 
-    // Select a head armor type that doesn't exist in common tier
-    await page.selectOption('select#head-armor-type', 'Wyvern');
+    // Select a head armor type that doesn't have results for this encumbrance/tier combo
+    await page.selectOption('select#head-armor-type', 'Dragon');
     await page.waitForTimeout(500);
 
-    // Should show the no results message
-    await expect(page.getByText('No gear sets available with Wyvern head armor')).toBeVisible();
+    // Should show the no results message (Dragon not in common tier)
+    await expect(page.getByText('No gear sets available with Dragon head armor')).toBeVisible();
   });
 
   test('should show real stat values in the armor stats table', async ({ page }) => {
@@ -188,7 +188,7 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select protection type and armor tier
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     // Set encumbrance to 20 to get non-zero armor
@@ -211,7 +211,7 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select both
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
@@ -230,7 +230,7 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select both
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
@@ -243,24 +243,24 @@ test.describe('Darkfall Gear Optimizer', () => {
     await expect(page.getByText('Optimal Gear Configuration')).not.toBeVisible();
   });
 
-  test('should display Dragon armor stats with DragonScales column in All tier', async ({ page }) => {
+  test('should display armor stats table in Dragon tier', async ({ page }) => {
     await page.goto('/');
 
-    // Select All tier to get Dragon armor
+    // Select Dragon tier to get Dragon armor
     await page.selectOption('select#dataset', { label: 'Magic' });
-    await page.selectOption('select#armor-tier', { label: 'All (incl. Dragon)' });
+    await page.selectOption('select#armor-tier', { label: 'Dragon' });
     await page.waitForTimeout(1000);
 
     // Set high encumbrance to get Dragon armor
     await page.getByRole('button', { name: '30', exact: true }).click();
     await page.waitForTimeout(500);
 
-    // The DrScl column header should be present
-    await expect(page.getByText('DrScl')).toBeVisible();
-
     // The stats table should be visible with data
     const table = page.locator('[data-testid="armor-stats-table"]');
     await expect(table).toBeVisible();
+
+    // Check that the combined elemental column is present
+    await expect(page.getByText('Fire/Acid/Cold')).toBeVisible();
   });
 
   test('should be responsive on mobile', async ({ page }) => {
@@ -275,7 +275,7 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Select protection type and armor tier
     await page.selectOption('select#dataset', { label: 'Physical' });
-    await page.selectOption('select#armor-tier', { label: 'Common' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
     // Results should be visible on mobile

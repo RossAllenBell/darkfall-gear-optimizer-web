@@ -12,7 +12,7 @@ export default function ArmorAccessSelector({ config, selectedTier, onSelect, di
   return (
     <div className="p-4 border rounded-lg bg-white shadow-sm">
       <label htmlFor="armor-tier" className="block text-sm font-medium text-gray-700 mb-2">
-        Armor Access
+        I have access to everything up to:
       </label>
       <select
         id="armor-tier"

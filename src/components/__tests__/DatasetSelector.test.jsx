@@ -26,7 +26,7 @@ describe('DatasetSelector', () => {
       />
     );
 
-    expect(screen.getByLabelText('Protection Type')).toBeInTheDocument();
+    expect(screen.getByLabelText('I would like to optimize for protection against:')).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Physical' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Magic' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Piercing' })).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('DatasetSelector', () => {
       />
     );
 
-    const select = screen.getByLabelText('Protection Type');
+    const select = screen.getByLabelText('I would like to optimize for protection against:');
     await user.selectOptions(select, 'magic');
 
     expect(onSelect).toHaveBeenCalledWith(mockConfig.protectionTypes[1]);
@@ -59,7 +59,7 @@ describe('DatasetSelector', () => {
       />
     );
 
-    const select = screen.getByLabelText('Protection Type');
+    const select = screen.getByLabelText('I would like to optimize for protection against:');
     expect(select).toHaveValue('physical');
   });
 
@@ -73,7 +73,7 @@ describe('DatasetSelector', () => {
       />
     );
 
-    const select = screen.getByLabelText('Protection Type');
+    const select = screen.getByLabelText('I would like to optimize for protection against:');
     expect(select).toBeDisabled();
   });
 
@@ -89,7 +89,7 @@ describe('DatasetSelector', () => {
       />
     );
 
-    const select = screen.getByLabelText('Protection Type');
+    const select = screen.getByLabelText('I would like to optimize for protection against:');
     await user.selectOptions(select, '');
 
     expect(onSelect).toHaveBeenCalledWith(null);

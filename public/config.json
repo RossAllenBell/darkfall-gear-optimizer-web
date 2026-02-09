@@ -8,10 +8,10 @@
     { "id": "physical33-magic66", "displayName": "33% Physical, 66% Magic" }
   ],
   "armorAccessTiers": [
-    { "id": "common", "displayName": "Common" },
-    { "id": "common+fp", "displayName": "Common + Full Plate" },
-    { "id": "common+fp+inf", "displayName": "Common + Full Plate + Infernal" },
-    { "id": "all", "displayName": "All (incl. Dragon)" }
+    { "id": "common", "displayName": "Bone and Plate" },
+    { "id": "common+fp", "displayName": "Full Plate" },
+    { "id": "common+fp+inf", "displayName": "Infernal" },
+    { "id": "all", "displayName": "Dragon" }
   ],
-  "armorTypes": ["NoArmor", "Cloth", "Padded", "Bone", "Leather", "Studded", "Chain", "Banded", "Scale", "Plate", "FullPlate", "Infernal", "Dragon", "Phantasmal", "Wyvern"]
+  "armorTypes": ["NoArmor", "Cloth", "Padded", "Bone", "Leather", "Studded", "Chain", "Banded", "Scale", "Plate", "FullPlate", "Infernal", "Dragon"]
 }

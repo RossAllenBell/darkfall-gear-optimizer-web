@@ -12,7 +12,7 @@ export default function DatasetSelector({ config, selectedProtectionType, onSele
   return (
     <div className="p-4 border rounded-lg bg-white shadow-sm">
       <label htmlFor="dataset" className="block text-sm font-medium text-gray-700 mb-2">
-        Protection Type
+        I would like to optimize for protection against:
       </label>
       <select
         id="dataset"
