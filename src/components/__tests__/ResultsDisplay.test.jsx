@@ -194,22 +194,6 @@ describe('ResultsDisplay', () => {
     expect(screen.getByText(/you still need to be aware of which types of armor/)).toBeInTheDocument();
   });
 
-  it('should display statistics section', () => {
-    render(
-      <ResultsDisplay
-        optimalGear={mockOptimalGear}
-        loading={false}
-        error={null}
-        hasDataset={true}
-      />
-    );
-
-    expect(screen.getByText('Statistics')).toBeInTheDocument();
-    expect(screen.getByText('Total Protection')).toBeInTheDocument();
-    expect(screen.getByText('5.44')).toBeInTheDocument();
-    expect(screen.getByText('Actual Encumbrance')).toBeInTheDocument();
-    expect(screen.getByText('19.15')).toBeInTheDocument();
-  });
 });
 
 describe('ArmorStatsTable', () => {

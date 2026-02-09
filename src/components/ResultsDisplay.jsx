@@ -39,11 +39,11 @@ export function ArmorStatsTable({ realStats }) {
   if (!realStats) return null;
 
   return (
-    <table className="min-w-full text-xs" data-testid="armor-stats-table">
+    <table className="text-xs" data-testid="armor-stats-table">
       <thead>
         <tr className="border-b border-gray-300">
           <th className="text-left py-1 pr-2 font-semibold text-gray-700">Slot</th>
-          <th className="text-right py-1 px-1 font-semibold text-gray-700 border-l-2 border-gray-300">Enc</th>
+          <th className="text-right py-1 px-1 font-semibold text-gray-700 border-l-2 border-gray-300 border-r-2">Enc</th>
           {DISPLAY_COLUMNS.map((col, idx) => (
             <th key={col.key} className={`text-right py-1 px-1 font-semibold text-gray-700 ${groupBorderClass(col, idx)}`}>
               {col.label}
@@ -55,7 +55,7 @@ export function ArmorStatsTable({ realStats }) {
         {realStats.slots.map((slot, idx) => (
           <tr key={idx} className="border-b border-gray-100">
             <td className="py-1 pr-2 text-gray-700 whitespace-nowrap">{slot.label}</td>
-            <td className="text-right py-1 px-1 text-gray-600 border-l-2 border-gray-300">{formatStat(slot.encumbrance)}</td>
+            <td className="text-right py-1 px-1 text-gray-600 border-l-2 border-gray-300 border-r-2">{formatStat(slot.encumbrance)}</td>
             {DISPLAY_COLUMNS.map((col, colIdx) => (
               <td key={col.key} className={`text-right py-1 px-1 text-gray-600 ${groupBorderClass(col, colIdx)}`}>
                 {formatStat(getStatValue(slot.stats, col))}
@@ -65,7 +65,7 @@ export function ArmorStatsTable({ realStats }) {
         ))}
         <tr className="border-t-2 border-gray-400 font-bold">
           <td className="py-1 pr-2 text-gray-900">Total</td>
-          <td className="text-right py-1 px-1 text-gray-900 border-l-2 border-gray-300">{formatStat(realStats.totals.encumbrance)}</td>
+          <td className="text-right py-1 px-1 text-gray-900 border-l-2 border-gray-300 border-r-2">{formatStat(realStats.totals.encumbrance)}</td>
           {DISPLAY_COLUMNS.map((col, colIdx) => (
             <td key={col.key} className={`text-right py-1 px-1 text-gray-900 ${groupBorderClass(col, colIdx)}`}>
               {formatStat(getStatValue(realStats.totals.stats, col))}
@@ -192,26 +192,6 @@ export default function ResultsDisplay({ optimalGear, loading, error, hasDataset
           </div>
         )}
 
-        {/* Fallback stats */}
-        <div className="pt-4 border-t border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
-            Statistics
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 bg-green-50 rounded border border-green-200">
-              <p className="text-xs text-gray-600 mb-1">Total Protection</p>
-              <p className="text-lg font-bold text-green-700">
-                {gearData.totalProtection.toFixed(2)}
-              </p>
-            </div>
-            <div className="p-3 bg-blue-50 rounded border border-blue-200">
-              <p className="text-xs text-gray-600 mb-1">Actual Encumbrance</p>
-              <p className="text-lg font-bold text-blue-700">
-                {gearData.encumbrance.toFixed(2)}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
