@@ -1,23 +1,83 @@
 import React from 'react';
-import { parseGearData, getArmorColorClass, DAMAGE_TYPES } from '../utils/gearCalculator';
+import { parseGearData, getArmorColorClass } from '../utils/gearCalculator';
 
-const DAMAGE_TYPE_ABBREVS = {
-  Bludgeoning: 'Blud',
-  Piercing: 'Pier',
-  Slashing: 'Slash',
-  Acid: 'Acid',
-  Cold: 'Cold',
-  Fire: 'Fire',
-  Holy: 'Holy',
-  Lightning: 'Ltn',
-  Unholy: 'Unh',
-  Impact: 'Imp',
-  FiendClaw: 'Fiend',
-  Ratka: 'Ratka',
-  DragonScales: 'DrScl'
-};
+const DISPLAY_COLUMNS = [
+  { key: 'Slashing', label: 'Slash', group: 'physical' },
+  { key: 'Bludgeoning', label: 'Bludg', group: 'physical' },
+  { key: 'Piercing', label: 'Pierce', group: 'physical' },
+  { key: 'elemental', label: 'Fire/Acid/Cold', group: 'elemental', computed: true },
+  { key: 'Lightning', label: 'Lightning', group: 'lightning' },
+  { key: 'Holy', label: 'Holy', group: 'holyunholy' },
+  { key: 'Unholy', label: 'Unholy', group: 'holyunholy' },
+  { key: 'Impact', label: 'Impact', group: 'impact' },
+];
 
-export default function ResultsDisplay({ optimalGear, loading, error, hasDataset, featherEnabled, headArmorType, realStats }) {
+function getElementalValue(stats) {
+  return stats.Fire || stats.Acid || stats.Cold || 0;
+}
+
+function formatStat(val) {
+  if (val === 0) return '-';
+  return val.toFixed(2);
+}
+
+function getStatValue(stats, col) {
+  if (col.computed && col.key === 'elemental') {
+    return getElementalValue(stats);
+  }
+  return stats[col.key] || 0;
+}
+
+function groupBorderClass(col, idx) {
+  if (idx === 0) return '';
+  const prevGroup = DISPLAY_COLUMNS[idx - 1].group;
+  if (col.group !== prevGroup) return 'border-l-2 border-gray-300';
+  return '';
+}
+
+export function ArmorStatsTable({ realStats }) {
+  if (!realStats) return null;
+
+  return (
+    <table className="min-w-full text-xs" data-testid="armor-stats-table">
+      <thead>
+        <tr className="border-b border-gray-300">
+          <th className="text-left py-1 pr-2 font-semibold text-gray-700">Slot</th>
+          <th className="text-right py-1 px-1 font-semibold text-gray-700 border-l-2 border-gray-300">Enc</th>
+          {DISPLAY_COLUMNS.map((col, idx) => (
+            <th key={col.key} className={`text-right py-1 px-1 font-semibold text-gray-700 ${groupBorderClass(col, idx)}`}>
+              {col.label}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {realStats.slots.map((slot, idx) => (
+          <tr key={idx} className="border-b border-gray-100">
+            <td className="py-1 pr-2 text-gray-700 whitespace-nowrap">{slot.label}</td>
+            <td className="text-right py-1 px-1 text-gray-600 border-l-2 border-gray-300">{formatStat(slot.encumbrance)}</td>
+            {DISPLAY_COLUMNS.map((col, colIdx) => (
+              <td key={col.key} className={`text-right py-1 px-1 text-gray-600 ${groupBorderClass(col, colIdx)}`}>
+                {formatStat(getStatValue(slot.stats, col))}
+              </td>
+            ))}
+          </tr>
+        ))}
+        <tr className="border-t-2 border-gray-400 font-bold">
+          <td className="py-1 pr-2 text-gray-900">Total</td>
+          <td className="text-right py-1 px-1 text-gray-900 border-l-2 border-gray-300">{formatStat(realStats.totals.encumbrance)}</td>
+          {DISPLAY_COLUMNS.map((col, colIdx) => (
+            <td key={col.key} className={`text-right py-1 px-1 text-gray-900 ${groupBorderClass(col, colIdx)}`}>
+              {formatStat(getStatValue(realStats.totals.stats, col))}
+            </td>
+          ))}
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
+export default function ResultsDisplay({ optimalGear, loading, error, hasDataset, featherEnabled, headArmorType }) {
   if (loading) {
     return (
       <div className="p-4 border rounded-lg bg-white shadow-sm">
@@ -94,11 +154,6 @@ export default function ResultsDisplay({ optimalGear, loading, error, hasDataset
     );
   };
 
-  const formatStat = (val) => {
-    if (val === 0) return '-';
-    return val.toFixed(2);
-  };
-
   return (
     <div className="p-4 border rounded-lg bg-white shadow-sm">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Optimal Gear Configuration</h2>
@@ -122,6 +177,9 @@ export default function ResultsDisplay({ optimalGear, loading, error, hasDataset
             <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
               Interchangeable Slots (7 total)
             </h3>
+            <p className="text-xs text-gray-500 italic mb-2">
+              Note: you still need to be aware of which types of armor are available in which slots (ex: gloves are only available in certain types)
+            </p>
             <div className="space-y-2">
               {gearData.interchangeable.map((slot, index) => (
                 <InterchangeableSlot
@@ -134,74 +192,26 @@ export default function ResultsDisplay({ optimalGear, loading, error, hasDataset
           </div>
         )}
 
-        {/* Armor Stats Table */}
-        {realStats && (
-          <div className="pt-4 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
-              Armor Stats
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-xs" data-testid="armor-stats-table">
-                <thead>
-                  <tr className="border-b border-gray-300">
-                    <th className="text-left py-1 pr-2 font-semibold text-gray-700">Slot</th>
-                    <th className="text-right py-1 px-1 font-semibold text-gray-700">Enc</th>
-                    {DAMAGE_TYPES.map(dt => (
-                      <th key={dt} className="text-right py-1 px-1 font-semibold text-gray-700">
-                        {DAMAGE_TYPE_ABBREVS[dt]}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {realStats.slots.map((slot, idx) => (
-                    <tr key={idx} className="border-b border-gray-100">
-                      <td className="py-1 pr-2 text-gray-700 whitespace-nowrap">{slot.label}</td>
-                      <td className="text-right py-1 px-1 text-gray-600">{formatStat(slot.encumbrance)}</td>
-                      {DAMAGE_TYPES.map(dt => (
-                        <td key={dt} className="text-right py-1 px-1 text-gray-600">
-                          {formatStat(slot.stats[dt])}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                  <tr className="border-t-2 border-gray-400 font-bold">
-                    <td className="py-1 pr-2 text-gray-900">Total</td>
-                    <td className="text-right py-1 px-1 text-gray-900">{formatStat(realStats.totals.encumbrance)}</td>
-                    {DAMAGE_TYPES.map(dt => (
-                      <td key={dt} className="text-right py-1 px-1 text-gray-900">
-                        {formatStat(realStats.totals.stats[dt])}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
+        {/* Fallback stats */}
+        <div className="pt-4 border-t border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+            Statistics
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 bg-green-50 rounded border border-green-200">
+              <p className="text-xs text-gray-600 mb-1">Total Protection</p>
+              <p className="text-lg font-bold text-green-700">
+                {gearData.totalProtection.toFixed(2)}
+              </p>
+            </div>
+            <div className="p-3 bg-blue-50 rounded border border-blue-200">
+              <p className="text-xs text-gray-600 mb-1">Actual Encumbrance</p>
+              <p className="text-lg font-bold text-blue-700">
+                {gearData.encumbrance.toFixed(2)}
+              </p>
             </div>
           </div>
-        )}
-
-        {/* Fallback stats when no realStats available */}
-        {!realStats && (
-          <div className="pt-4 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
-              Statistics
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-green-50 rounded border border-green-200">
-                <p className="text-xs text-gray-600 mb-1">Total Protection</p>
-                <p className="text-lg font-bold text-green-700">
-                  {gearData.totalProtection.toFixed(2)}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                <p className="text-xs text-gray-600 mb-1">Actual Encumbrance</p>
-                <p className="text-lg font-bold text-blue-700">
-                  {gearData.encumbrance.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

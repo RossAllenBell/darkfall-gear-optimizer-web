@@ -142,7 +142,7 @@ export function parseGearData(gearSet) {
  */
 export function getArmorColorClass(armorType) {
   const type = armorType.toLowerCase().replace(/\s+/g, '');
-  const darkTypes = ['scale', 'plate', 'fullplate', 'infernal', 'dragon', 'wyvern'];
+  const darkTypes = ['scale', 'plate', 'fullplate', 'infernal', 'dragon'];
   const textClass = darkTypes.includes(type) ? 'text-white' : 'text-gray-900';
   return `bg-armor-${type} ${textClass}`;
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import ResultsDisplay from '../ResultsDisplay';
+import ResultsDisplay, { ArmorStatsTable } from '../ResultsDisplay';
 
 describe('ResultsDisplay', () => {
   const mockOptimalGear = {
@@ -140,7 +140,6 @@ describe('ResultsDisplay', () => {
         loading={false}
         error={null}
         hasDataset={true}
-        realStats={mockRealStats}
       />
     );
 
@@ -156,7 +155,6 @@ describe('ResultsDisplay', () => {
         loading={false}
         error={null}
         hasDataset={true}
-        realStats={mockRealStats}
       />
     );
 
@@ -169,70 +167,40 @@ describe('ResultsDisplay', () => {
     expect(screen.getByText('Studded')).toBeInTheDocument();
   });
 
-  it('should display armor stats table when realStats is provided', () => {
+  it('should display interchangeable slots with counts', () => {
     render(
       <ResultsDisplay
         optimalGear={mockOptimalGear}
         loading={false}
         error={null}
         hasDataset={true}
-        realStats={mockRealStats}
       />
     );
 
-    expect(screen.getByText('Armor Stats')).toBeInTheDocument();
-    expect(screen.getByTestId('armor-stats-table')).toBeInTheDocument();
-
-    // Check column headers
-    expect(screen.getByText('Enc')).toBeInTheDocument();
-    expect(screen.getByText('Blud')).toBeInTheDocument();
-    expect(screen.getByText('Slash')).toBeInTheDocument();
-    expect(screen.getByText('Fire')).toBeInTheDocument();
-
-    // Check totals row
-    expect(screen.getByText('Total')).toBeInTheDocument();
+    expect(screen.getByText('×5')).toBeInTheDocument();
+    expect(screen.getByText('×2')).toBeInTheDocument();
   });
 
-  it('should display slot labels in stats table', () => {
+  it('should display interchangeable slots note', () => {
     render(
       <ResultsDisplay
         optimalGear={mockOptimalGear}
         loading={false}
         error={null}
         hasDataset={true}
-        realStats={mockRealStats}
       />
     );
 
-    expect(screen.getByText('Head')).toBeInTheDocument();
-    expect(screen.getByText('Chest')).toBeInTheDocument();
-    expect(screen.getByText('Bone x5')).toBeInTheDocument();
+    expect(screen.getByText(/you still need to be aware of which types of armor/)).toBeInTheDocument();
   });
 
-  it('should display dash for zero stats', () => {
+  it('should display statistics section', () => {
     render(
       <ResultsDisplay
         optimalGear={mockOptimalGear}
         loading={false}
         error={null}
         hasDataset={true}
-        realStats={mockRealStats}
-      />
-    );
-
-    // FiendClaw, Ratka, DragonScales are all 0 -> should show '-'
-    const dashes = screen.getAllByText('-');
-    expect(dashes.length).toBeGreaterThan(0);
-  });
-
-  it('should show fallback statistics when realStats is null', () => {
-    render(
-      <ResultsDisplay
-        optimalGear={mockOptimalGear}
-        loading={false}
-        error={null}
-        hasDataset={true}
-        realStats={null}
       />
     );
 
@@ -242,19 +210,87 @@ describe('ResultsDisplay', () => {
     expect(screen.getByText('Actual Encumbrance')).toBeInTheDocument();
     expect(screen.getByText('19.15')).toBeInTheDocument();
   });
+});
 
-  it('should display interchangeable slots with counts', () => {
-    render(
-      <ResultsDisplay
-        optimalGear={mockOptimalGear}
-        loading={false}
-        error={null}
-        hasDataset={true}
-        realStats={mockRealStats}
-      />
-    );
+describe('ArmorStatsTable', () => {
+  const mockRealStats = {
+    slots: [
+      {
+        label: 'Head',
+        armorType: 'Bone',
+        count: 1,
+        encumbrance: 1.5,
+        stats: {
+          Bludgeoning: 0.6, Piercing: 0.6, Slashing: 0.6,
+          Acid: 1.16, Cold: 1.16, Fire: 1.16, Holy: 1.4,
+          Lightning: 1.16, Unholy: 1.4, Impact: 0.37,
+          FiendClaw: 0, Ratka: 0, DragonScales: 0
+        }
+      },
+      {
+        label: 'Chest',
+        armorType: 'Leather',
+        count: 1,
+        encumbrance: 5.75,
+        stats: {
+          Bludgeoning: 1.15, Piercing: 1.15, Slashing: 1.15,
+          Acid: 1.51, Cold: 1.51, Fire: 1.51, Holy: 1.51,
+          Lightning: 1.51, Unholy: 1.51, Impact: 0.86,
+          FiendClaw: 0, Ratka: 0, DragonScales: 0
+        }
+      }
+    ],
+    totals: {
+      encumbrance: 7.25,
+      stats: {
+        Bludgeoning: 1.75, Piercing: 1.75, Slashing: 1.75,
+        Acid: 2.67, Cold: 2.67, Fire: 2.67, Holy: 2.91,
+        Lightning: 2.67, Unholy: 2.91, Impact: 1.23,
+        FiendClaw: 0, Ratka: 0, DragonScales: 0
+      }
+    }
+  };
 
-    expect(screen.getByText('×5')).toBeInTheDocument();
-    expect(screen.getByText('×2')).toBeInTheDocument();
+  it('should render the stats table with correct columns', () => {
+    render(<ArmorStatsTable realStats={mockRealStats} />);
+
+    expect(screen.getByTestId('armor-stats-table')).toBeInTheDocument();
+
+    // Check new column headers
+    expect(screen.getByText('Enc')).toBeInTheDocument();
+    expect(screen.getByText('Slash')).toBeInTheDocument();
+    expect(screen.getByText('Bludg')).toBeInTheDocument();
+    expect(screen.getByText('Pierce')).toBeInTheDocument();
+    expect(screen.getByText('Fire/Acid/Cold')).toBeInTheDocument();
+    expect(screen.getByText('Lightning')).toBeInTheDocument();
+    expect(screen.getByText('Holy')).toBeInTheDocument();
+    expect(screen.getByText('Unholy')).toBeInTheDocument();
+    expect(screen.getByText('Impact')).toBeInTheDocument();
+  });
+
+  it('should not render Fiend, Ratka, or DrScl columns', () => {
+    render(<ArmorStatsTable realStats={mockRealStats} />);
+
+    expect(screen.queryByText('Fiend')).not.toBeInTheDocument();
+    expect(screen.queryByText('Ratka')).not.toBeInTheDocument();
+    expect(screen.queryByText('DrScl')).not.toBeInTheDocument();
+  });
+
+  it('should display slot labels', () => {
+    render(<ArmorStatsTable realStats={mockRealStats} />);
+
+    expect(screen.getByText('Head')).toBeInTheDocument();
+    expect(screen.getByText('Chest')).toBeInTheDocument();
+  });
+
+  it('should display totals row', () => {
+    render(<ArmorStatsTable realStats={mockRealStats} />);
+
+    expect(screen.getByText('Total')).toBeInTheDocument();
+  });
+
+  it('should return null when realStats is null', () => {
+    const { container } = render(<ArmorStatsTable realStats={null} />);
+    expect(container.innerHTML).toBe('');
   });
 });

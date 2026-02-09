@@ -179,7 +179,6 @@ describe('gearCalculator', () => {
       expect(getArmorColorClass('Plate')).toContain('text-white');
       expect(getArmorColorClass('FullPlate')).toContain('text-white');
       expect(getArmorColorClass('Infernal')).toContain('text-white');
-      expect(getArmorColorClass('Wyvern')).toContain('text-white');
     });
 
     it('should use dark text for light armor types', () => {
