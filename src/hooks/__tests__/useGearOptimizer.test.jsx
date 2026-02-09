@@ -380,7 +380,8 @@ describe('useGearOptimizer', () => {
     });
 
     // Only one result has Head - Bone (encumbrance 19.15)
-    expect(result.current.encumbranceRange.min).toBe(19.15);
+    // With feather value 0.1, min is adjusted: 19.15 - 0.1 = 19.05
+    expect(result.current.encumbranceRange.min).toBe(19.05);
     expect(result.current.encumbranceRange.max).toBe(19.15);
   });
 

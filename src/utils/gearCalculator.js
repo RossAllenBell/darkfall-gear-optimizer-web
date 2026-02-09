@@ -76,18 +76,22 @@ export function getAvailableEncumbrances(results, headArmorType = null) {
  * Gets the valid encumbrance range for a dataset
  * @param {Array} results - Array of gear configurations
  * @param {string} headArmorType - Required head armor type (null if feather not enabled)
+ * @param {number} featherValue - Feather value to offset range minimum (0 if not enabled)
  * @returns {Object} - {min, max} encumbrance values
  */
-export function getEncumbranceRange(results, headArmorType = null) {
+export function getEncumbranceRange(results, headArmorType = null, featherValue = 0) {
   const encumbrances = getAvailableEncumbrances(results, headArmorType);
 
   if (encumbrances.length === 0) {
     return { min: 0, max: 200 };
   }
 
+  const rawMin = encumbrances[0];
+  const rawMax = Math.min(200, encumbrances[encumbrances.length - 1]);
+
   return {
-    min: encumbrances[0],
-    max: Math.min(200, encumbrances[encumbrances.length - 1])
+    min: Math.max(0, parseFloat((rawMin - featherValue).toFixed(2))),
+    max: rawMax
   };
 }
 

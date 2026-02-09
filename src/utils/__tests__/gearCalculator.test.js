@@ -136,6 +136,27 @@ describe('gearCalculator', () => {
       const range = getEncumbranceRange([]);
       expect(range).toEqual({ min: 0, max: 200 });
     });
+
+    it('should adjust min by feather value', () => {
+      const range = getEncumbranceRange(mockResults, null, 5.0);
+      // rawMin = 19.15, adjusted = 19.15 - 5.0 = 14.15
+      expect(range.min).toBe(14.15);
+      expect(range.max).toBe(25.0);
+    });
+
+    it('should adjust min by feather value with head armor filter', () => {
+      const range = getEncumbranceRange(mockResults, 'Bone', 10.0);
+      // rawMin for Bone = 19.15, adjusted = 19.15 - 10.0 = 9.15
+      expect(range.min).toBe(9.15);
+      expect(range.max).toBe(19.15);
+    });
+
+    it('should clamp feather-adjusted min to 0', () => {
+      const range = getEncumbranceRange(mockResults, 'Bone', 30.0);
+      // rawMin for Bone = 19.15, adjusted = 19.15 - 30.0 = -10.85, clamped to 0
+      expect(range.min).toBe(0);
+      expect(range.max).toBe(19.15);
+    });
   });
 
   describe('parseGearData', () => {

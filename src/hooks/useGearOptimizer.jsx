@@ -69,7 +69,8 @@ export function useGearOptimizer() {
         if (data.results && data.results.length > 0) {
           const range = getEncumbranceRange(
             data.results,
-            featherEnabled ? headArmorType : null
+            featherEnabled ? headArmorType : null,
+            featherEnabled ? featherValue : 0
           );
           setTargetEncumbrance(prev => {
             if (prev < range.min) return range.min;
@@ -89,7 +90,8 @@ export function useGearOptimizer() {
     if (datasetResults && datasetResults.length > 0) {
       const range = getEncumbranceRange(
         datasetResults,
-        featherEnabled ? headArmorType : null
+        featherEnabled ? headArmorType : null,
+        featherEnabled ? featherValue : 0
       );
 
       // Clamp current target to new range
@@ -99,7 +101,7 @@ export function useGearOptimizer() {
         setTargetEncumbrance(range.max);
       }
     }
-  }, [featherEnabled, headArmorType, datasetResults]);
+  }, [featherEnabled, headArmorType, featherValue, datasetResults]);
 
   // Calculate optimal gear
   const optimalGear = datasetResults
@@ -115,7 +117,8 @@ export function useGearOptimizer() {
   const encumbranceRange = datasetResults
     ? getEncumbranceRange(
         datasetResults,
-        featherEnabled ? headArmorType : null
+        featherEnabled ? headArmorType : null,
+        featherEnabled ? featherValue : 0
       )
     : { min: 0, max: 200 };
 
