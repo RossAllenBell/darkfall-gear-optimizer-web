@@ -197,7 +197,7 @@ describe('useGearOptimizer', () => {
     expect(datasetCall[0]).toBe('/darkfall-gear-optimizer-web/results-complete-all-physical.json');
   });
 
-  it('should set encumbrance to dataset min when dataset loads', async () => {
+  it('should preserve encumbrance when dataset loads if value is in range', async () => {
     mockFetchResponses();
     const { result } = renderHook(() => useGearOptimizer());
 
@@ -214,7 +214,8 @@ describe('useGearOptimizer', () => {
       expect(result.current.datasetResults).not.toBeNull();
     });
 
-    expect(result.current.targetEncumbrance).toBe(19.15);
+    // Default encumbrance is 20, which is within the mock dataset range (19.15-25.0)
+    expect(result.current.targetEncumbrance).toBe(20);
   });
 
   it('should calculate optimal gear after dataset loads', async () => {

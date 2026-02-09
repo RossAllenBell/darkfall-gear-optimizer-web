@@ -65,13 +65,17 @@ export function useGearOptimizer() {
         setDatasetResults(data.results);
         setLoading(false);
 
-        // Set initial encumbrance to minimum available
+        // Clamp encumbrance to new dataset's range, preserving current value if possible
         if (data.results && data.results.length > 0) {
           const range = getEncumbranceRange(
             data.results,
             featherEnabled ? headArmorType : null
           );
-          setTargetEncumbrance(range.min);
+          setTargetEncumbrance(prev => {
+            if (prev < range.min) return range.min;
+            if (prev > range.max) return range.max;
+            return prev;
+          });
         }
       })
       .catch(err => {
