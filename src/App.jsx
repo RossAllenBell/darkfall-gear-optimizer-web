@@ -30,7 +30,6 @@ function App() {
   } = useGearOptimizer();
 
   const hasDataset = !!selectedProtectionType && !!selectedArmorTier && !!datasetResults;
-  const isFeatherReady = !featherEnabled || (featherEnabled && headArmorType);
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -81,7 +80,7 @@ function App() {
               datasetResults={datasetResults}
               headArmorType={featherEnabled ? headArmorType : null}
               featherEnabled={featherEnabled}
-              disabled={!hasDataset || !isFeatherReady || loading}
+              disabled={!hasDataset || loading}
             />
           </div>
 

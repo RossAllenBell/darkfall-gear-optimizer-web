@@ -27,13 +27,13 @@ describe('FeatherInput', () => {
   it('should not show feather inputs when disabled', () => {
     render(<FeatherInput {...defaultProps} />);
     expect(screen.queryByLabelText('Feather Value (0.1-30)')).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('Head Armor Type')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Head Armor Type (optional)')).not.toBeInTheDocument();
   });
 
   it('should show feather inputs when enabled', () => {
     render(<FeatherInput {...defaultProps} enabled={true} />);
     expect(screen.getByLabelText('Feather Value (0.1-30)')).toBeInTheDocument();
-    expect(screen.getByLabelText('Head Armor Type')).toBeInTheDocument();
+    expect(screen.getByLabelText('Head Armor Type (optional)')).toBeInTheDocument();
   });
 
   it('should call onEnabledChange when checkbox is toggled', async () => {
@@ -94,7 +94,7 @@ describe('FeatherInput', () => {
       />
     );
 
-    const select = screen.getByLabelText('Head Armor Type');
+    const select = screen.getByLabelText('Head Armor Type (optional)');
     await user.selectOptions(select, 'Bone');
 
     expect(onHeadArmorTypeChange).toHaveBeenCalledWith('Bone');
@@ -105,6 +105,6 @@ describe('FeatherInput', () => {
 
     expect(screen.getByLabelText("I'm using Head armor with Feather")).toBeDisabled();
     expect(screen.getByLabelText('Feather Value (0.1-30)')).toBeDisabled();
-    expect(screen.getByLabelText('Head Armor Type')).toBeDisabled();
+    expect(screen.getByLabelText('Head Armor Type (optional)')).toBeDisabled();
   });
 });
