@@ -15,7 +15,7 @@ export function useGearOptimizer() {
 
   // Feather configuration
   const [featherEnabled, setFeatherEnabled] = useState(false);
-  const [featherValue, setFeatherValue] = useState(0);
+  const [featherValue, setFeatherValue] = useState(0.1);
   const [headArmorType, setHeadArmorType] = useState(null);
 
   // Encumbrance target

@@ -28,6 +28,9 @@ export default function FeatherInput({
 
       {enabled && (
         <div className="space-y-3 pl-6 border-l-2 border-gray-200">
+          <p className="text-xs text-gray-500 italic">
+            Note: when using this option, results may be unexpected as it filters to optimal sets that happen to contain the Head armor you've selected
+          </p>
           <div>
             <label htmlFor="feather-value" className="block text-sm font-medium text-gray-700 mb-1">
               Feather Value (0.1-30)

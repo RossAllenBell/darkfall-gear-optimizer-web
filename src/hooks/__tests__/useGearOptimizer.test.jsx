@@ -352,7 +352,7 @@ describe('useGearOptimizer', () => {
     });
 
     expect(result.current.featherEnabled).toBe(false);
-    expect(result.current.featherValue).toBe(0);
+    expect(result.current.featherValue).toBe(0.1);
     expect(result.current.headArmorType).toBeNull();
   });
 

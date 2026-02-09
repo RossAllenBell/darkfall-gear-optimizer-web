@@ -4,7 +4,7 @@ import DatasetSelector from './components/DatasetSelector';
 import ArmorAccessSelector from './components/ArmorAccessSelector';
 import FeatherInput from './components/FeatherInput';
 import EncumbranceInput from './components/EncumbranceInput';
-import ResultsDisplay from './components/ResultsDisplay';
+import ResultsDisplay, { ArmorStatsTable } from './components/ResultsDisplay';
 
 function App() {
   const {
@@ -66,15 +66,7 @@ function App() {
             <FeatherInput
               config={config}
               enabled={featherEnabled}
-              onEnabledChange={(enabled) => {
-                setFeatherEnabled(enabled);
-                if (enabled) {
-                  setFeatherValue(0.1);
-                } else {
-                  setFeatherValue(0);
-                  setHeadArmorType(null);
-                }
-              }}
+              onEnabledChange={setFeatherEnabled}
               featherValue={featherValue}
               onFeatherValueChange={setFeatherValue}
               headArmorType={headArmorType}
@@ -103,11 +95,22 @@ function App() {
                 hasDataset={hasDataset}
                 featherEnabled={featherEnabled}
                 headArmorType={headArmorType}
-                realStats={realStats}
               />
             </div>
           )}
         </div>
+
+        {/* Armor Stats Table - Full width below the two-column layout */}
+        {hasDataset && realStats && (
+          <div className="mt-6 p-4 border rounded-lg bg-white shadow-sm">
+            <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+              Armor Stats
+            </h3>
+            <div className="overflow-x-auto">
+              <ArmorStatsTable realStats={realStats} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
