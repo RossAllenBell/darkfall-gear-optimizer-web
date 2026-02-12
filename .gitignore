@@ -16,6 +16,7 @@ dist-ssr
 coverage
 playwright-report
 test-results
+.playwright-mcp
 
 # Dev server
 .dev-server.pid
