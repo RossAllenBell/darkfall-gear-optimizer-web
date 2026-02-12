@@ -1,4 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+const FEATHER_MIN = 0.1;
+const FEATHER_MAX = 30;
+
+const FEATHER_PRESETS = [
+  { value: 5, label: 'Q1 (5)' },
+  { value: 9, label: 'Q2 (9)' },
+  { value: 13, label: 'Q3 (13)' },
+  { value: 18, label: 'Q4 (18)' },
+  { value: 22, label: 'Q5 (22)' },
+];
 
 export default function FeatherInput({
   config,
@@ -10,6 +21,33 @@ export default function FeatherInput({
   onHeadArmorTypeChange,
   disabled
 }) {
+  const [inputValue, setInputValue] = useState(featherValue.toString());
+
+  useEffect(() => {
+    setInputValue(featherValue.toFixed(1));
+  }, [featherValue]);
+
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleInputBlur = () => {
+    const numValue = parseFloat(inputValue) || FEATHER_MIN;
+    const clamped = Math.max(FEATHER_MIN, Math.min(FEATHER_MAX, numValue));
+    onFeatherValueChange(clamped);
+    setInputValue(clamped.toFixed(1));
+  };
+
+  const handleIncrement = (delta) => {
+    const newValue = parseFloat((featherValue + delta).toFixed(1));
+    const clamped = Math.max(FEATHER_MIN, Math.min(FEATHER_MAX, newValue));
+    onFeatherValueChange(clamped);
+  };
+
+  const handlePresetClick = (preset) => {
+    onFeatherValueChange(preset);
+  };
+
   return (
     <div className="p-4 border rounded-lg bg-white shadow-sm">
       <div className="flex items-center mb-3">
@@ -30,22 +68,60 @@ export default function FeatherInput({
         <div className="space-y-3 pl-6 border-l-2 border-gray-200">
           <div>
             <label htmlFor="feather-value" className="block text-sm font-medium text-gray-700 mb-1">
-              Feather Value (0.1-30)
+              Feather Value ({FEATHER_MIN}-{FEATHER_MAX})
             </label>
-            <input
-              type="number"
-              id="feather-value"
-              min="0.1"
-              max="30"
-              step="0.1"
-              value={featherValue}
-              onChange={(e) => {
-                const value = parseFloat(e.target.value) || 0.1;
-                onFeatherValueChange(Math.max(0.1, Math.min(30, value)));
-              }}
-              disabled={disabled}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            />
+
+            <div className="text-xs text-gray-500 mb-2">
+              Valid range: {FEATHER_MIN.toFixed(1)} - {FEATHER_MAX.toFixed(1)}
+            </div>
+
+            <div className="flex items-center gap-2 mb-2">
+              <button
+                onClick={() => handleIncrement(-0.1)}
+                disabled={disabled || featherValue <= FEATHER_MIN}
+                className="px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Decrease by 0.1"
+              >
+                -0.1
+              </button>
+
+              <input
+                type="text"
+                id="feather-value"
+                value={inputValue}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleInputBlur();
+                  }
+                }}
+                disabled={disabled}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-center"
+              />
+
+              <button
+                onClick={() => handleIncrement(0.1)}
+                disabled={disabled || featherValue >= FEATHER_MAX}
+                className="px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Increase by 0.1"
+              >
+                +0.1
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              {FEATHER_PRESETS.map(({ value: preset, label }) => (
+                <button
+                  key={preset}
+                  onClick={() => handlePresetClick(preset)}
+                  disabled={disabled}
+                  className="flex-1 px-2 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -67,7 +143,7 @@ export default function FeatherInput({
               ))}
             </select>
             <p className="mt-1 text-xs text-gray-500 italic">
-              Note: selecting a Head Armor Type filters results to optimal sets that contain that specific Head armor
+              Note: selecting a Head Armor Type filters results to optimal sets that happen to contain that specific Head armor
             </p>
           </div>
         </div>
