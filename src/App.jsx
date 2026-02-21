@@ -111,6 +111,14 @@ function App() {
             </p>
           </div>
         )}
+        {/* Footer */}
+        <footer className="mt-8 pt-6 border-t border-gray-300 text-center text-sm text-gray-500">
+          <p>
+            I'm very interested in feedback on if this tool was helpful and if you have any suggestions or fixes to make it even better.
+            I'm <span className="font-medium text-gray-700">bullwinklejmoose</span> on Discord
+            and <span className="font-medium text-gray-700">Bullwinkle Jmoose</span> in game.
+          </p>
+        </footer>
       </div>
     </div>
   );
