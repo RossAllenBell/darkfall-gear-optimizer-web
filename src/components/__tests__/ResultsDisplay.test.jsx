@@ -277,4 +277,41 @@ describe('ArmorStatsTable', () => {
     const { container } = render(<ArmorStatsTable realStats={null} />);
     expect(container.innerHTML).toBe('');
   });
+
+  it('should display Magic Enc and Archery Enc summary rows', () => {
+    render(<ArmorStatsTable realStats={mockRealStats} />);
+
+    expect(screen.getByText('Magic Enc')).toBeInTheDocument();
+    expect(screen.getByText('Archery Enc')).toBeInTheDocument();
+  });
+
+  it('should show dash for Magic/Archery Enc when total encumbrance is below threshold', () => {
+    // Total encumbrance is 7.25, below both thresholds (20 and 30)
+    render(<ArmorStatsTable realStats={mockRealStats} />);
+
+    const magicRow = screen.getByText('Magic Enc').closest('tr');
+    const archeryRow = screen.getByText('Archery Enc').closest('tr');
+
+    expect(magicRow).toHaveTextContent('-');
+    expect(archeryRow).toHaveTextContent('-');
+  });
+
+  it('should show correct effective encumbrance when above thresholds', () => {
+    const highEncStats = {
+      ...mockRealStats,
+      totals: {
+        ...mockRealStats.totals,
+        encumbrance: 35,
+      }
+    };
+    render(<ArmorStatsTable realStats={highEncStats} />);
+
+    const magicRow = screen.getByText('Magic Enc').closest('tr');
+    const archeryRow = screen.getByText('Archery Enc').closest('tr');
+
+    // 35 - 20 = 15
+    expect(magicRow).toHaveTextContent('15.00');
+    // 35 - 30 = 5
+    expect(archeryRow).toHaveTextContent('5.00');
+  });
 });

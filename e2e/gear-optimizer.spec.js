@@ -199,7 +199,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await expect(table).toBeVisible();
 
     // The Total row should have numeric values
-    const totalRow = table.locator('tr').last();
+    const totalRow = table.locator('tr', { has: page.getByRole('cell', { name: 'Total', exact: true }) });
     const totalText = await totalRow.textContent();
     // Total row should contain decimal numbers (e.g. 19.90, 4.35)
     expect(totalText).toMatch(/\d+\.\d+/);

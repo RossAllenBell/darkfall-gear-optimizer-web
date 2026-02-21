@@ -72,6 +72,18 @@ export function ArmorStatsTable({ realStats }) {
             </td>
           ))}
         </tr>
+        <tr className="h-3" aria-hidden="true"><td colSpan={2 + DISPLAY_COLUMNS.length}></td></tr>
+        {[{ label: 'Magic Enc', threshold: 20 }, { label: 'Archery Enc', threshold: 30 }].map(({ label, threshold }) => (
+          <tr key={label} className="text-gray-500">
+            <td className="py-1 pr-2 italic">{label}</td>
+            <td className="text-right py-1 px-1 border-l-2 border-gray-300 border-r-2">
+              {formatStat(Math.max(0, realStats.totals.encumbrance - threshold))}
+            </td>
+            {DISPLAY_COLUMNS.map((col, colIdx) => (
+              <td key={col.key} className={`py-1 px-1 ${groupBorderClass(col, colIdx)}`}></td>
+            ))}
+          </tr>
+        ))}
       </tbody>
     </table>
   );
