@@ -65,6 +65,8 @@ describe('useGearOptimizer', () => {
   beforeEach(() => {
     fetchMock = vi.fn();
     global.fetch = fetchMock;
+    // Reset URL to clean state before each test
+    window.history.replaceState(null, '', '/');
   });
 
   afterEach(() => {
@@ -470,5 +472,157 @@ describe('useGearOptimizer', () => {
     });
 
     expect(result.current.realStats).toBeNull();
+  });
+
+  describe('URL state', () => {
+    it('should initialize feather and encumbrance from URL params on mount', async () => {
+      window.history.replaceState(null, '', '/?feather=true&featherValue=5&headArmor=Bone&enc=25');
+      mockFetchResponses();
+      const { result } = renderHook(() => useGearOptimizer());
+
+      expect(result.current.featherEnabled).toBe(true);
+      expect(result.current.featherValue).toBe(5);
+      expect(result.current.headArmorType).toBe('Bone');
+      expect(result.current.targetEncumbrance).toBe(25);
+    });
+
+    it('should resolve protection and tier from URL after config loads', async () => {
+      window.history.replaceState(null, '', '/?protection=physical&tier=common');
+      mockFetchResponses();
+      const { result } = renderHook(() => useGearOptimizer());
+
+      await waitFor(() => {
+        expect(result.current.config).not.toBeNull();
+      });
+
+      // Protection and tier should be resolved from URL params
+      await waitFor(() => {
+        expect(result.current.selectedProtectionType).toEqual(mockConfig.protectionTypes[0]);
+      });
+      expect(result.current.selectedArmorTier).toEqual(mockConfig.armorAccessTiers[0]);
+
+      // Should trigger dataset load
+      await waitFor(() => {
+        expect(result.current.datasetResults).not.toBeNull();
+      });
+    });
+
+    it('should ignore invalid protection and tier IDs from URL', async () => {
+      window.history.replaceState(null, '', '/?protection=invalid&tier=bogus');
+      mockFetchResponses();
+      const { result } = renderHook(() => useGearOptimizer());
+
+      await waitFor(() => {
+        expect(result.current.config).not.toBeNull();
+      });
+
+      // Should remain null (invalid IDs ignored)
+      expect(result.current.selectedProtectionType).toBeNull();
+      expect(result.current.selectedArmorTier).toBeNull();
+      expect(result.current.datasetResults).toBeNull();
+    });
+
+    it('should call replaceState with correct URL on state changes', async () => {
+      mockFetchResponses();
+      const replaceSpy = vi.spyOn(window.history, 'replaceState');
+      const { result } = renderHook(() => useGearOptimizer());
+
+      await waitFor(() => {
+        expect(result.current.config).not.toBeNull();
+      });
+
+      // Clear any calls from initialization
+      replaceSpy.mockClear();
+
+      act(() => {
+        result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+        result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.datasetResults).not.toBeNull();
+      });
+
+      // URL should include protection and tier
+      const lastCall = replaceSpy.mock.calls[replaceSpy.mock.calls.length - 1];
+      const url = lastCall[2];
+      expect(url).toContain('protection=physical');
+      expect(url).toContain('tier=common');
+    });
+
+    it('should produce clean URL when all values are defaults', async () => {
+      mockFetchResponses();
+      const replaceSpy = vi.spyOn(window.history, 'replaceState');
+      const { result } = renderHook(() => useGearOptimizer());
+
+      await waitFor(() => {
+        expect(result.current.config).not.toBeNull();
+      });
+
+      // With no selections and default enc/feather, URL should be clean
+      // The URL sync effect should produce a URL with no query params
+      const lastCallUrl = replaceSpy.mock.calls.length > 0
+        ? replaceSpy.mock.calls[replaceSpy.mock.calls.length - 1][2]
+        : window.location.pathname;
+      expect(lastCallUrl).not.toContain('?');
+    });
+
+    it('should omit featherValue and headArmor from URL when feather disabled', async () => {
+      mockFetchResponses();
+      const replaceSpy = vi.spyOn(window.history, 'replaceState');
+      const { result } = renderHook(() => useGearOptimizer());
+
+      await waitFor(() => {
+        expect(result.current.config).not.toBeNull();
+      });
+
+      act(() => {
+        result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+        result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.datasetResults).not.toBeNull();
+      });
+
+      // Enable feather, set values, then disable
+      act(() => {
+        result.current.setFeatherEnabled(true);
+        result.current.setFeatherValue(5);
+        result.current.setHeadArmorType('Bone');
+      });
+
+      act(() => {
+        result.current.setFeatherEnabled(false);
+      });
+
+      const lastCall = replaceSpy.mock.calls[replaceSpy.mock.calls.length - 1];
+      const url = lastCall[2];
+      expect(url).not.toContain('featherValue');
+      expect(url).not.toContain('headArmor');
+      expect(url).not.toContain('feather');
+    });
+
+    it('should reflect clamped encumbrance in URL after dataset load', async () => {
+      // Set enc to 5 which is below the dataset range (19.15-30)
+      window.history.replaceState(null, '', '/?protection=physical&tier=common&enc=5');
+      mockFetchResponses();
+      const replaceSpy = vi.spyOn(window.history, 'replaceState');
+      const { result } = renderHook(() => useGearOptimizer());
+
+      await waitFor(() => {
+        expect(result.current.datasetResults).not.toBeNull();
+      });
+
+      // Encumbrance should be clamped to min of dataset range
+      expect(result.current.targetEncumbrance).toBe(19.15);
+
+      // URL should reflect the clamped value
+      await waitFor(() => {
+        const calls = replaceSpy.mock.calls;
+        const lastUrl = calls[calls.length - 1][2];
+        expect(lastUrl).toContain('enc=19.15');
+      });
+    });
   });
 });

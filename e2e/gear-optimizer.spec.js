@@ -280,4 +280,101 @@ test.describe('Darkfall Gear Optimizer', () => {
     // Results should be visible on mobile
     await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
   });
+
+  test.describe('URL deeplinks', () => {
+    test('should restore full state from URL params', async ({ page }) => {
+      await page.goto('/?protection=physical&tier=common&enc=25');
+      await page.waitForTimeout(1000);
+
+      // Protection type and armor tier should be selected
+      await expect(page.locator('select#dataset')).toHaveValue('physical');
+      await expect(page.locator('select#armor-tier')).toHaveValue('common');
+
+      // Encumbrance should be set
+      const encValue = await page.locator('input#encumbrance').inputValue();
+      expect(parseFloat(encValue)).toBeCloseTo(25, 1);
+
+      // Results should be displayed
+      await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
+    });
+
+    test('should restore feather state from URL params', async ({ page }) => {
+      await page.goto('/?protection=physical&tier=common&enc=20&feather=true&featherValue=5&headArmor=Bone');
+      await page.waitForTimeout(1000);
+
+      // Feather should be enabled
+      await expect(page.locator('input#feather-enabled')).toBeChecked();
+
+      // Feather value should be set
+      const featherVal = await page.locator('input#feather-value').inputValue();
+      expect(parseFloat(featherVal)).toBe(5);
+
+      // Head armor type should be selected
+      await expect(page.locator('select#head-armor-type')).toHaveValue('Bone');
+
+      // Results should be displayed
+      await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
+    });
+
+    test('should update URL when user changes inputs', async ({ page }) => {
+      await page.goto('/');
+
+      // Select protection type and armor tier
+      await page.selectOption('select#dataset', { label: 'Physical' });
+      await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
+      await page.waitForTimeout(1000);
+
+      // URL should contain the selection params
+      const url = page.url();
+      expect(url).toContain('protection=physical');
+      expect(url).toContain('tier=common');
+    });
+
+    test('should have clean URL with no params when all values are defaults', async ({ page }) => {
+      await page.goto('/');
+      await page.waitForTimeout(500);
+
+      // URL should not have any query params
+      const url = page.url();
+      expect(url).not.toContain('?');
+    });
+
+    test('should load normally with invalid URL params', async ({ page }) => {
+      await page.goto('/?protection=invalid&tier=bogus&enc=abc');
+      await page.waitForTimeout(1000);
+
+      // App should load without errors
+      await expect(page.getByRole('heading', { name: 'Darkfall Gear Optimizer' })).toBeVisible();
+
+      // No dataset should be selected (invalid IDs ignored)
+      await expect(page.locator('select#dataset')).toHaveValue('');
+
+      // Results should not be displayed
+      await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).not.toBeVisible();
+    });
+
+    test('should restore state when navigating back to a captured URL', async ({ page }) => {
+      // Set up state via URL
+      await page.goto('/?protection=physical&tier=common&enc=25');
+      await page.waitForTimeout(1000);
+
+      // Capture the URL
+      const capturedUrl = page.url();
+
+      // Navigate away
+      await page.goto('/');
+      await page.waitForTimeout(500);
+
+      // Navigate back to captured URL
+      await page.goto(capturedUrl);
+      await page.waitForTimeout(1000);
+
+      // State should be fully restored
+      await expect(page.locator('select#dataset')).toHaveValue('physical');
+      await expect(page.locator('select#armor-tier')).toHaveValue('common');
+      const encValue = await page.locator('input#encumbrance').inputValue();
+      expect(parseFloat(encValue)).toBeCloseTo(25, 1);
+      await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
+    });
+  });
 });

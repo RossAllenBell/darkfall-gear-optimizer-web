@@ -127,10 +127,12 @@ This is a React SPA that helps Darkfall players choose optimal armor combination
 
 ### Data Flow
 
-1. **On mount** (`useGearOptimizer` Effect 1): fetches `config.json` (dropdown options) and `armor-data-complete.csv` (per-slot stats for display) in parallel.
+0. **URL initialization**: on first render, `parseUrlParams(window.location.search)` initializes `featherEnabled`, `featherValue`, `headArmorType`, and `targetEncumbrance` directly. `protection` and `tier` IDs are stored as pending refs (they need config to resolve).
+1. **On mount** (`useGearOptimizer` Effect 1): fetches `config.json` (dropdown options) and `armor-data-complete.csv` (per-slot stats for display) in parallel. After config loads, resolves pending URL param IDs (`protection`/`tier`) against config and sets selections.
 2. **On dataset selection** (Effect 2): when both protection type and armor tier are selected, fetches `results-complete-{tierId}-{protectionTypeId}.json`. Clamps `targetEncumbrance` to the new dataset's valid range.
 3. **On feather config change** (Effect 3): recomputes encumbrance range and clamps `targetEncumbrance` if needed.
-4. **Each render**: derives `optimalGear` via `findOptimalGear()`, then `parseGearData()` → `calculateRealStats()` for the stats table.
+4. **URL sync** (Effect 4): after config loads, syncs all state to URL via `history.replaceState`. Omits default values to keep URLs clean.
+5. **Each render**: derives `optimalGear` via `findOptimalGear()`, then `parseGearData()` → `calculateRealStats()` for the stats table.
 
 ### Key Files
 
@@ -139,6 +141,7 @@ This is a React SPA that helps Darkfall players choose optimal armor combination
 | `src/App.jsx` | Top-level layout. Single-column before dataset loads, two-column after. |
 | `src/hooks/useGearOptimizer.jsx` | All application state and data fetching. Returns flat object of state + setters. |
 | `src/utils/gearCalculator.js` | Pure business logic (6 functions + 1 constant). No side effects. |
+| `src/utils/urlState.js` | URL state persistence: `parseUrlParams`, `serializeUrlParams`, `buildUrl`, `validateParamsAgainstConfig`. |
 | `src/components/DatasetSelector.jsx` | Protection type dropdown from `config.protectionTypes`. |
 | `src/components/ArmorAccessSelector.jsx` | Armor tier dropdown from `config.armorAccessTiers`. |
 | `src/components/FeatherInput.jsx` | Feather toggle, value input (0.1–30) with Q1–Q5 presets, head armor type dropdown. |
@@ -173,6 +176,8 @@ This is a React SPA that helps Darkfall players choose optimal armor combination
 Key state: `config`, `selectedProtectionType`, `selectedArmorTier`, `datasetResults`, `armorData`, `loading`, `error`, `featherEnabled`, `featherValue` (default 0.1), `headArmorType`, `targetEncumbrance` (default 20).
 
 Derived each render: `optimalGear`, `encumbranceRange`, `realStats` (via `useMemo`).
+
+**URL state**: All input state is persisted as URL query parameters via `history.replaceState` for shareable deeplinks. Params: `protection`, `tier`, `enc`, `feather`, `featherValue`, `headArmor`. Default values are omitted. `featherValue`/`headArmor` are only included when `feather=true`. On mount, URL params initialize state; `protection`/`tier` are resolved after config loads.
 
 ### Data File Schemas
 

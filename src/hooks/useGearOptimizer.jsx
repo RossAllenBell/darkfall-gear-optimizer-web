@@ -1,10 +1,17 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { findOptimalGear, getEncumbranceRange, parseGearData, parseArmorCsv, calculateRealStats } from '../utils/gearCalculator';
+import { parseUrlParams, serializeUrlParams, buildUrl, validateParamsAgainstConfig } from '../utils/urlState';
 
 /**
  * Custom hook for managing gear optimizer state and data fetching
  */
 export function useGearOptimizer() {
+  // Parse URL params once on first render
+  const urlParamsRef = useRef(null);
+  if (urlParamsRef.current === null) {
+    urlParamsRef.current = parseUrlParams(window.location.search);
+  }
+
   const [config, setConfig] = useState(null);
   const [selectedProtectionType, setSelectedProtectionType] = useState(null);
   const [selectedArmorTier, setSelectedArmorTier] = useState(null);
@@ -13,13 +20,20 @@ export function useGearOptimizer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Feather configuration
-  const [featherEnabled, setFeatherEnabled] = useState(false);
-  const [featherValue, setFeatherValue] = useState(0.1);
-  const [headArmorType, setHeadArmorType] = useState(null);
+  // Feather configuration — initialized from URL params
+  const [featherEnabled, setFeatherEnabled] = useState(() => urlParamsRef.current.feather);
+  const [featherValue, setFeatherValue] = useState(() => urlParamsRef.current.featherValue);
+  const [headArmorType, setHeadArmorType] = useState(() => urlParamsRef.current.headArmor);
 
-  // Encumbrance target
-  const [targetEncumbrance, setTargetEncumbrance] = useState(20);
+  // Encumbrance target — initialized from URL params
+  const [targetEncumbrance, setTargetEncumbrance] = useState(() => urlParamsRef.current.enc);
+
+  // Track pending URL param IDs that need config to resolve
+  const pendingUrlParams = useRef({
+    protection: urlParamsRef.current.protection,
+    tier: urlParamsRef.current.tier,
+  });
+  const hasAppliedUrlParams = useRef(false);
 
   // Load config and armor CSV on mount
   useEffect(() => {
@@ -37,6 +51,29 @@ export function useGearOptimizer() {
         setConfig(configData);
         setArmorData(parseArmorCsv(csvText));
         setLoading(false);
+
+        // Resolve pending URL params against config
+        if (!hasAppliedUrlParams.current && pendingUrlParams.current) {
+          hasAppliedUrlParams.current = true;
+          const pending = pendingUrlParams.current;
+
+          if (pending.protection || pending.tier) {
+            const validated = validateParamsAgainstConfig(
+              { protection: pending.protection, tier: pending.tier, headArmor: null },
+              configData
+            );
+
+            if (validated.protection) {
+              const protType = configData.protectionTypes.find(pt => pt.id === validated.protection);
+              if (protType) setSelectedProtectionType(protType);
+            }
+
+            if (validated.tier) {
+              const tierObj = configData.armorAccessTiers.find(at => at.id === validated.tier);
+              if (tierObj) setSelectedArmorTier(tierObj);
+            }
+          }
+        }
       })
       .catch(err => {
         setError(err.message);
@@ -102,6 +139,28 @@ export function useGearOptimizer() {
       }
     }
   }, [featherEnabled, headArmorType, featherValue, datasetResults]);
+
+  // Sync state to URL
+  useEffect(() => {
+    // Don't update URL until config has loaded and initial params are applied
+    if (!config || !hasAppliedUrlParams.current) return;
+
+    const state = {
+      protection: selectedProtectionType?.id ?? null,
+      tier: selectedArmorTier?.id ?? null,
+      enc: targetEncumbrance,
+      feather: featherEnabled,
+      featherValue,
+      headArmor: headArmorType,
+    };
+
+    const searchString = serializeUrlParams(state);
+    const newUrl = buildUrl(window.location.pathname, searchString);
+
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, [config, selectedProtectionType, selectedArmorTier, targetEncumbrance, featherEnabled, featherValue, headArmorType]);
 
   // Calculate optimal gear
   const optimalGear = datasetResults
