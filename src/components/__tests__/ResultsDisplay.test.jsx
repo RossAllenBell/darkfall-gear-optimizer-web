@@ -314,4 +314,57 @@ describe('ArmorStatsTable', () => {
     // 35 - 30 = 5
     expect(archeryRow).toHaveTextContent('5.00');
   });
+
+  it('should not show Feather or Effective rows when feather is disabled', () => {
+    render(<ArmorStatsTable realStats={mockRealStats} />);
+
+    expect(screen.queryByText('Feather')).not.toBeInTheDocument();
+    expect(screen.queryByText('Effective')).not.toBeInTheDocument();
+  });
+
+  it('should show Feather and Effective rows when feather is enabled', () => {
+    const stats = {
+      ...mockRealStats,
+      totals: { ...mockRealStats.totals, encumbrance: 25 }
+    };
+    render(<ArmorStatsTable realStats={stats} featherEnabled={true} featherValue={5} />);
+
+    const featherRow = screen.getByText('Feather').closest('tr');
+    expect(featherRow).toHaveTextContent('−5.00');
+
+    const effectiveRow = screen.getByText('Effective').closest('tr');
+    expect(effectiveRow).toHaveTextContent('20.00');
+  });
+
+  it('should compute Magic/Archery Enc from effective encumbrance with feather', () => {
+    const stats = {
+      ...mockRealStats,
+      totals: { ...mockRealStats.totals, encumbrance: 40 }
+    };
+    render(<ArmorStatsTable realStats={stats} featherEnabled={true} featherValue={5} />);
+
+    // Effective = 40 - 5 = 35
+    const effectiveRow = screen.getByText('Effective').closest('tr');
+    expect(effectiveRow).toHaveTextContent('35.00');
+
+    // Magic Enc = 35 - 20 = 15
+    const magicRow = screen.getByText('Magic Enc').closest('tr');
+    expect(magicRow).toHaveTextContent('15.00');
+
+    // Archery Enc = 35 - 30 = 5
+    const archeryRow = screen.getByText('Archery Enc').closest('tr');
+    expect(archeryRow).toHaveTextContent('5.00');
+  });
+
+  it('should clamp effective encumbrance to zero', () => {
+    const stats = {
+      ...mockRealStats,
+      totals: { ...mockRealStats.totals, encumbrance: 3 }
+    };
+    render(<ArmorStatsTable realStats={stats} featherEnabled={true} featherValue={5} />);
+
+    // Effective = max(0, 3 - 5) = 0
+    const effectiveRow = screen.getByText('Effective').closest('tr');
+    expect(effectiveRow).toHaveTextContent('-');
+  });
 });

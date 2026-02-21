@@ -35,8 +35,15 @@ function groupBorderClass(col, idx) {
   return '';
 }
 
-export function ArmorStatsTable({ realStats }) {
+export function ArmorStatsTable({ realStats, featherEnabled = false, featherValue = 0 }) {
   if (!realStats) return null;
+
+  const rawEnc = realStats.totals.encumbrance;
+  const activeFeather = featherEnabled ? featherValue : 0;
+  const effectiveEnc = Math.max(0, rawEnc - activeFeather);
+  const emptyCols = DISPLAY_COLUMNS.map((col, colIdx) => (
+    <td key={col.key} className={`py-1 px-1 ${groupBorderClass(col, colIdx)}`}></td>
+  ));
 
   return (
     <table className="text-xs" data-testid="armor-stats-table">
@@ -65,19 +72,35 @@ export function ArmorStatsTable({ realStats }) {
         ))}
         <tr className="border-t-2 border-gray-400 font-bold">
           <td className="py-1 pr-2 text-gray-900">Total</td>
-          <td className="text-right py-1 px-1 text-gray-900 border-l-2 border-gray-300 border-r-2">{formatStat(realStats.totals.encumbrance)}</td>
+          <td className="text-right py-1 px-1 text-gray-900 border-l-2 border-gray-300 border-r-2">{formatStat(rawEnc)}</td>
           {DISPLAY_COLUMNS.map((col, colIdx) => (
             <td key={col.key} className={`text-right py-1 px-1 text-gray-900 ${groupBorderClass(col, colIdx)}`}>
               {formatStat(getStatValue(realStats.totals.stats, col))}
             </td>
           ))}
         </tr>
+        {featherEnabled && (
+          <>
+            <tr className="text-gray-500">
+              <td className="py-1 pr-2 italic">Feather</td>
+              <td className="text-right py-1 px-1 border-l-2 border-gray-300 border-r-2">
+                {activeFeather > 0 ? `−${activeFeather.toFixed(2)}` : '-'}
+              </td>
+              {emptyCols}
+            </tr>
+            <tr className="font-semibold text-gray-700">
+              <td className="py-1 pr-2">Effective</td>
+              <td className="text-right py-1 px-1 border-l-2 border-gray-300 border-r-2">{formatStat(effectiveEnc)}</td>
+              {emptyCols}
+            </tr>
+          </>
+        )}
         <tr className="h-3" aria-hidden="true"><td colSpan={2 + DISPLAY_COLUMNS.length}></td></tr>
         {[{ label: 'Magic Enc', threshold: 20 }, { label: 'Archery Enc', threshold: 30 }].map(({ label, threshold }) => (
           <tr key={label} className="text-gray-500">
             <td className="py-1 pr-2 italic">{label}</td>
             <td className="text-right py-1 px-1 border-l-2 border-gray-300 border-r-2">
-              {formatStat(Math.max(0, realStats.totals.encumbrance - threshold))}
+              {formatStat(Math.max(0, effectiveEnc - threshold))}
             </td>
             {DISPLAY_COLUMNS.map((col, colIdx) => (
               <td key={col.key} className={`py-1 px-1 ${groupBorderClass(col, colIdx)}`}></td>

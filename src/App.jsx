@@ -105,7 +105,7 @@ function App() {
             <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">
               Armor Stats
             </h3>
-            <ArmorStatsTable realStats={realStats} />
+            <ArmorStatsTable realStats={realStats} featherEnabled={featherEnabled} featherValue={featherValue} />
             <p className="mt-3 text-xs text-gray-500 italic max-w-lg">
               Note: I thought Archery encumbrance kicks in at 30, but the in-game paperdoll suggests it kicks in at 60. Let me know if there's a definitive source of truth for this.
             </p>
