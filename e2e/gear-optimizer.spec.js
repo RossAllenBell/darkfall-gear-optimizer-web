@@ -353,6 +353,24 @@ test.describe('Darkfall Gear Optimizer', () => {
       await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).not.toBeVisible();
     });
 
+    test('should show confirmation when Share button is clicked', async ({ page }) => {
+      await page.goto('/?protection=physical&tier=common&enc=25');
+      await page.waitForTimeout(1000);
+
+      // Share button should be visible
+      const shareButton = page.getByRole('button', { name: 'Share' });
+      await expect(shareButton).toBeVisible();
+
+      // Click Share button
+      await shareButton.click();
+
+      // Confirmation message should appear
+      await expect(page.getByText('Link copied to clipboard')).toBeVisible();
+
+      // Confirmation should disappear after ~2 seconds
+      await expect(page.getByText('Link copied to clipboard')).not.toBeVisible({ timeout: 3000 });
+    });
+
     test('should restore state when navigating back to a captured URL', async ({ page }) => {
       // Set up state via URL
       await page.goto('/?protection=physical&tier=common&enc=25');

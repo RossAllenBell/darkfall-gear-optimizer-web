@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useGearOptimizer } from './hooks/useGearOptimizer';
 import DatasetSelector from './components/DatasetSelector';
 import ArmorAccessSelector from './components/ArmorAccessSelector';
@@ -30,6 +30,13 @@ function App() {
   } = useGearOptimizer();
 
   const hasDataset = !!selectedProtectionType && !!selectedArmorTier && !!datasetResults;
+
+  const [copied, setCopied] = useState(false);
+  const handleShare = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -109,6 +116,19 @@ function App() {
             <p className="mt-3 text-xs text-gray-500 italic max-w-lg">
               Note: I thought Archery encumbrance kicks in at 30, but the in-game paperdoll suggests it kicks in at 60. Let me know if there's a definitive source of truth for this.
             </p>
+            <div className="mt-3 relative inline-block">
+              <button
+                onClick={handleShare}
+                className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md transition-colors"
+              >
+                Share
+              </button>
+              {copied && (
+                <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap text-sm text-green-700 font-medium">
+                  Link copied to clipboard
+                </span>
+              )}
+            </div>
           </div>
         )}
         {/* Footer */}
