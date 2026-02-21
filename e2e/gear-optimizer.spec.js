@@ -32,7 +32,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Verify results are displayed
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
     await expect(page.getByText('Fixed Slots')).toBeVisible();
     await expect(page.getByText('Armor Stats')).toBeVisible();
   });
@@ -46,12 +46,12 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Verify stats table headers
-    await expect(page.getByText('Enc')).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Enc' })).toBeVisible();
     await expect(page.getByText('Bludg')).toBeVisible();
     await expect(page.getByText('Slash')).toBeVisible();
 
     // Verify totals row
-    await expect(page.getByText('Total')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Total' })).toBeVisible();
   });
 
   test('should update results when encumbrance changes', async ({ page }) => {
@@ -63,12 +63,12 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Click the +0.1 button several times
-    await page.getByRole('button', { name: '+0.1' }).click();
-    await page.getByRole('button', { name: '+0.1' }).click();
+    await page.getByRole('button', { name: 'Increase by 0.1' }).click();
+    await page.getByRole('button', { name: 'Increase by 0.1' }).click();
     await page.waitForTimeout(500);
 
     // Results should still be displayed
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
   });
 
   test('should handle feather mode', async ({ page }) => {
@@ -94,7 +94,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(500);
 
     // Results should still be displayed
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
   });
 
   test('should use preset encumbrance buttons', async ({ page }) => {
@@ -118,7 +118,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.goto('/');
 
     // Should not show results initially
-    await expect(page.getByText('Optimal Gear Configuration')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).not.toBeVisible();
   });
 
   test('should not show results with only protection type chosen', async ({ page }) => {
@@ -129,18 +129,17 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(500);
 
     // Should not show results
-    await expect(page.getByText('Optimal Gear Configuration')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).not.toBeVisible();
   });
 
   test('should not show results with only armor tier chosen', async ({ page }) => {
     await page.goto('/');
 
-    // Select only armor tier
-    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
-    await page.waitForTimeout(500);
+    // Armor tier should be disabled without a protection type selected
+    await expect(page.locator('select#armor-tier')).toBeDisabled();
 
     // Should not show results
-    await expect(page.getByText('Optimal Gear Configuration')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).not.toBeVisible();
 
     // Feather and encumbrance controls should remain disabled
     await expect(page.locator('input#feather-enabled')).toBeDisabled();
@@ -154,14 +153,14 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
 
     // Change armor tier
     await page.selectOption('select#armor-tier', { label: 'Dragon' });
     await page.waitForTimeout(1000);
 
     // Results should still be visible (different data may load)
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
   });
 
   test('should show no results message for unavailable feather head armor', async ({ page }) => {
@@ -214,7 +213,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
 
     // Switch protection type
     await page.selectOption('select#dataset', { label: 'Magic' });
@@ -222,7 +221,7 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Armor tier should still be "Common" and results should load
     await expect(page.locator('select#armor-tier')).toHaveValue('common');
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
   });
 
   test('should clear results when protection type is deselected', async ({ page }) => {
@@ -233,14 +232,14 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
 
     // Deselect protection type
     await page.selectOption('select#dataset', '');
     await page.waitForTimeout(500);
 
     // Results should disappear
-    await expect(page.getByText('Optimal Gear Configuration')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).not.toBeVisible();
   });
 
   test('should display armor stats table in Dragon tier', async ({ page }) => {
@@ -279,6 +278,6 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Results should be visible on mobile
-    await expect(page.getByText('Optimal Gear Configuration')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
   });
 });

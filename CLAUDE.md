@@ -6,6 +6,7 @@ This document contains important guidelines and context for Claude when working 
 
 ### Always Run Tests Before Completion
 - **CRITICAL**: Always run all automated tests and verify they're passing before considering a feature complete
+- **CRITICAL**: Any non-trivial change must include comprehensive automated test coverage — unit tests for new logic, component tests for new UI, and e2e tests for new user workflows
 - Run `npm test` to execute the full test suite
 - Run `npm run test:coverage` to check code coverage
 - All tests must pass before committing code
@@ -96,6 +97,13 @@ Playwright MCP allows Claude to control a headless browser and interact with the
 - Test the complete user workflow
 - Take screenshots for debugging
 
+### E2E Test Locator Guidelines
+- **CRITICAL**: All e2e tests (`npm test` and `npm run test:e2e`) must pass cleanly — zero failures
+- **Never use `getByText()` for text that may appear as a substring elsewhere on the page.** Playwright's `getByText` uses substring matching, so `getByText('Enc')` matches "Encumbrance" and `getByText('Optimal Gear Configuration')` matches "Find optimal gear configurations..."
+- **Prefer role-based locators**: `getByRole('heading', { name: '...' })`, `getByRole('columnheader', { name: '...' })`, `getByRole('cell', { name: '...' })`, etc.
+- **Use aria-labels for buttons with ambiguous text**: The +/-0.1 buttons have `aria-label="Increase by 0.1"` / `aria-label="Decrease by 0.1"` — use `getByRole('button', { name: 'Increase by 0.1' })`, not `{ name: '+0.1' }`
+- **Scope locators when multiple similar elements exist**: e.g. when feather is enabled, both FeatherInput and EncumbranceInput have +/-0.1 buttons
+
 ### Testing Checklist Before Feature Completion
 - [ ] Unit tests written and passing
 - [ ] Component tests written and passing
@@ -106,28 +114,93 @@ Playwright MCP allows Claude to control a headless browser and interact with the
 - [ ] Code committed with appropriate message
 - [ ] Ready for user to push
 
-## Project-Specific Context
+## Codebase Overview
+
+This is a React SPA that helps Darkfall players choose optimal armor combinations given a target encumbrance and protection profile. All optimization is pre-computed — the app queries static JSON files, there is no backend.
 
 ### Architecture
 - **Framework**: React + Vite
-- **Styling**: Tailwind CSS
-- **Deployment**: GitHub Pages (static site)
-- **Data**: Pre-computed JSON files in `public/`
+- **Styling**: Tailwind CSS with custom `armor-*` color tokens (see `tailwind.config.js`)
+- **State**: Single custom hook (`useGearOptimizer`), no router or state library. Props flow strictly downward.
+- **Deployment**: GitHub Pages via `.github/workflows/deploy.yml` (Node 20, `npm ci` + `npm run build`, deploy `./dist`)
+- **Base path**: `vite.config.js` sets `base: '/darkfall-gear-optimizer-web/'` — all fetch URLs in `useGearOptimizer.jsx` are hardcoded with this prefix. Both must change together.
+
+### Data Flow
+
+1. **On mount** (`useGearOptimizer` Effect 1): fetches `config.json` (dropdown options) and `armor-data-complete.csv` (per-slot stats for display) in parallel.
+2. **On dataset selection** (Effect 2): when both protection type and armor tier are selected, fetches `results-complete-{tierId}-{protectionTypeId}.json`. Clamps `targetEncumbrance` to the new dataset's valid range.
+3. **On feather config change** (Effect 3): recomputes encumbrance range and clamps `targetEncumbrance` if needed.
+4. **Each render**: derives `optimalGear` via `findOptimalGear()`, then `parseGearData()` → `calculateRealStats()` for the stats table.
 
 ### Key Files
-- `src/utils/gearCalculator.js` - Core business logic for finding optimal gear
-- `src/hooks/useGearOptimizer.jsx` - Main state management hook
-- `public/config.json` - Dataset configuration
-- `vite.config.js` - Base path set to `/darkfall-gear-optimizer-web/` for GitHub Pages
 
-### Development Server
-```bash
-npm run dev  # Runs on http://localhost:5173
+| File | Purpose |
+|---|---|
+| `src/App.jsx` | Top-level layout. Single-column before dataset loads, two-column after. |
+| `src/hooks/useGearOptimizer.jsx` | All application state and data fetching. Returns flat object of state + setters. |
+| `src/utils/gearCalculator.js` | Pure business logic (6 functions + 1 constant). No side effects. |
+| `src/components/DatasetSelector.jsx` | Protection type dropdown from `config.protectionTypes`. |
+| `src/components/ArmorAccessSelector.jsx` | Armor tier dropdown from `config.armorAccessTiers`. |
+| `src/components/FeatherInput.jsx` | Feather toggle, value input (0.1–30) with Q1–Q5 presets, head armor type dropdown. |
+| `src/components/EncumbranceInput.jsx` | Target encumbrance input with +/-0.1 buttons and 20/30/40 presets. |
+| `src/components/ResultsDisplay.jsx` | Gear slot display + `ArmorStatsTable` (named export) for per-slot damage stats. |
+| `public/config.json` | Protection types (6), armor access tiers (4), armor type names (13). |
+| `public/armor-data-complete.csv` | 96 rows of per-type/per-slot stats (encumbrance + 13 damage types). |
+| `public/results-complete-*.json` | 24 pre-computed dataset files (6 protection types × 4 tiers). |
+| `tailwind.config.js` | Custom `armor-*` colors with safelist to prevent purging. |
+| `vite.config.js` | Base path for GitHub Pages. |
+
+### Business Logic (`gearCalculator.js`)
+
+- **`findOptimalGear(results, targetEncumbrance, featherValue, headArmorType)`** — Core algorithm. If feather is active, adds `featherValue` to `targetEncumbrance` (feather reduces effective encumbrance, so gear can be heavier). Optionally filters by head armor type. Linear scan for highest `totalProtection` within budget. Data is pre-sorted by encumbrance.
+- **`getEncumbranceRange(results, headArmorType, featherValue)`** — Returns `{min, max}` for the slider. Min is adjusted down by `featherValue`, clamped to 0. Max capped at 200.
+- **`getAvailableEncumbrances(results, headArmorType)`** — Sorted deduplicated encumbrance values. Used for preset button availability.
+- **`parseGearData(gearSet)`** — Parses gear piece descriptions into `{fixed: {head, chest, legs}, interchangeable: [{type, count}...]}`. Description patterns: `"Head - {type}"`, `"Chest - {type}"`, `"Legs - {type}"`, `"(interchangeable) - {type}"`.
+- **`parseArmorCsv(csvText)`** — Parses CSV into lookup: `{ [armorType]: { [slot]: { encumbrance, stats } } }`.
+- **`calculateRealStats(parsedGear, armorData)`** — Cross-references parsed gear with CSV data. Multiplies per-slot stats by count. Produces slot-level and total rows for `ArmorStatsTable`.
+- **`DAMAGE_TYPES`** — 13 damage type names in CSV column order.
+
+### Gear Model
+
+- **10 armor slots total**: 3 fixed (Head, Chest, Legs) + 7 interchangeable.
+- Interchangeable slots can mix armor types — this combinatorial space is why datasets are pre-computed offline.
+- Each results JSON entry is **Pareto-optimal**: higher encumbrance always means higher `totalProtection`.
+- `totalProtection` is a weighted scalar based on `metadata.protectionWeights`.
+- The CSV is used **only for display** (the `ArmorStatsTable`). Protection scoring happens offline.
+
+### State (`useGearOptimizer.jsx`)
+
+Key state: `config`, `selectedProtectionType`, `selectedArmorTier`, `datasetResults`, `armorData`, `loading`, `error`, `featherEnabled`, `featherValue` (default 0.1), `headArmorType`, `targetEncumbrance` (default 20).
+
+Derived each render: `optimalGear`, `encumbranceRange`, `realStats` (via `useMemo`).
+
+### Data File Schemas
+
+**`config.json`**: `{ protectionTypes: [{id, displayName}], armorAccessTiers: [{id, displayName}], armorTypes: [string] }`
+
+**Results JSON** (`results-complete-{tier}-{protection}.json`):
+```json
+{
+  "metadata": { "availabilityTier": "common", "protectionWeights": {"Slashing": 1.0, ...} },
+  "results": [
+    {
+      "rank": 1, "totalProtection": 0.0, "encumbrance": 0.0,
+      "gear": {
+        "piece1": { "description": "(interchangeable) - NoArmor", "count": 7, "encumbrance": 0.0, "protection": 0.0 },
+        "piece2": { "description": "Head - NoArmor", "count": 1, ... },
+        "piece3": { "description": "Legs - NoArmor", "count": 1, ... },
+        "piece4": { "description": "Chest - NoArmor", "count": 1, ... }
+      }
+    }
+  ]
+}
 ```
 
-### Build and Preview
+### Development
+
 ```bash
-npm run build    # Build for production
+npm run dev      # Dev server on http://localhost:5173
+npm run build    # Production build
 npm run preview  # Preview production build locally
 ```
 
@@ -148,6 +221,10 @@ Always consider and test:
 - No results matching criteria
 - Loading states
 - Error states
+
+## Keeping Documentation Current
+
+After non-trivial changes (new features, architectural shifts, new data files, changed schemas, etc.), update this file and/or `README.md` to reflect the current state. The Codebase Overview above is only useful if it stays accurate.
 
 ## Session Continuity
 
