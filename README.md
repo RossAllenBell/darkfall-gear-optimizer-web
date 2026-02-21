@@ -70,6 +70,8 @@ npm run test:all
 - **Component Tests** (React Testing Library): Individual React components
 - **E2E Tests** (Playwright): Full user workflows in real browser
 
+**Known noise:** You may see `Error: .[0].local.default[0]: missing field 'description'` on stderr when running npm commands. This comes from the `dexter` Nix toolchain manager wrapping npm, not from the project or its tests. It can be safely ignored.
+
 See `CLAUDE.md` for testing guidelines and development conventions.
 
 ## Deployment
