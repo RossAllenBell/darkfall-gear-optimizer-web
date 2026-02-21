@@ -78,7 +78,7 @@ describe('FeatherInput', () => {
     it('should display the current feather value in the input', () => {
       render(<FeatherInput {...defaultProps} enabled={true} featherValue={13} />);
       const input = screen.getByLabelText(/Feather Value/);
-      expect(input.value).toBe('13.0');
+      expect(input.value).toBe('13.00');
     });
 
     it('should call onFeatherValueChange with incremented value when +0.1 is clicked', async () => {
@@ -206,10 +206,10 @@ describe('FeatherInput', () => {
       const { rerender } = render(
         <FeatherInput {...defaultProps} enabled={true} featherValue={5} />
       );
-      expect(screen.getByLabelText(/Feather Value/).value).toBe('5.0');
+      expect(screen.getByLabelText(/Feather Value/).value).toBe('5.00');
 
       rerender(<FeatherInput {...defaultProps} enabled={true} featherValue={13} />);
-      expect(screen.getByLabelText(/Feather Value/).value).toBe('13.0');
+      expect(screen.getByLabelText(/Feather Value/).value).toBe('13.00');
     });
   });
 

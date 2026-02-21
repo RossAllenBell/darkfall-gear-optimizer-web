@@ -24,7 +24,7 @@ export default function FeatherInput({
   const [inputValue, setInputValue] = useState(featherValue.toString());
 
   useEffect(() => {
-    setInputValue(featherValue.toFixed(1));
+    setInputValue(featherValue.toFixed(2));
   }, [featherValue]);
 
   const handleInputChange = (e) => {
@@ -35,11 +35,11 @@ export default function FeatherInput({
     const numValue = parseFloat(inputValue) || FEATHER_MIN;
     const clamped = Math.max(FEATHER_MIN, Math.min(FEATHER_MAX, numValue));
     onFeatherValueChange(clamped);
-    setInputValue(clamped.toFixed(1));
+    setInputValue(clamped.toFixed(2));
   };
 
   const handleIncrement = (delta) => {
-    const newValue = parseFloat((featherValue + delta).toFixed(1));
+    const newValue = parseFloat((featherValue + delta).toFixed(2));
     const clamped = Math.max(FEATHER_MIN, Math.min(FEATHER_MAX, newValue));
     onFeatherValueChange(clamped);
   };
@@ -72,7 +72,7 @@ export default function FeatherInput({
             </label>
 
             <div className="text-xs text-gray-500 mb-2">
-              Valid range: {FEATHER_MIN.toFixed(1)} - {FEATHER_MAX.toFixed(1)}
+              Valid range: {FEATHER_MIN.toFixed(2)} - {FEATHER_MAX.toFixed(2)}
             </div>
 
             <div className="flex items-center gap-2 mb-2">
