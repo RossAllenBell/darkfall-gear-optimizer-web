@@ -218,23 +218,23 @@ describe('EncumbranceInput', () => {
   });
 
   it('should display presets in selected unit for Archery mode', () => {
-    render(<EncumbranceInput {...defaultProps} encumbranceType="archery" />);
+    render(<EncumbranceInput {...defaultProps} encumbranceType="archery" value={60} range={{ min: 19.15, max: 120 }} />);
     expect(screen.getByRole('button', { name: '0' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '20' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '40' })).toBeInTheDocument();
   });
 
   it('should display converted value in Archery mode', () => {
-    render(<EncumbranceInput {...defaultProps} value={30} encumbranceType="archery" />);
+    render(<EncumbranceInput {...defaultProps} value={60} encumbranceType="archery" range={{ min: 19.15, max: 100 }} />);
     const input = screen.getByRole('textbox', { name: /Encumbrance/ });
     expect(input.value).toBe('0.00');
   });
 
   it('should clamp value up to effective min when below floor', () => {
     const onChange = vi.fn();
-    // value=25 raw, archery effective min = max(19.15, 30) = 30, so 25 < 30
+    // value=25 raw, archery effective min = max(19.15, 60) = 60, so 25 < 60
     render(<EncumbranceInput {...defaultProps} value={25} encumbranceType="archery" onChange={onChange} />);
-    expect(onChange).toHaveBeenCalledWith(30);
+    expect(onChange).toHaveBeenCalledWith(60);
   });
 
   it('should enforce raw minimum of 20', () => {

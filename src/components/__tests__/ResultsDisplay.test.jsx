@@ -286,7 +286,7 @@ describe('ArmorStatsTable', () => {
   });
 
   it('should show dash for Magic/Archery Enc when total encumbrance is below threshold', () => {
-    // Total encumbrance is 7.25, below both thresholds (20 and 30)
+    // Total encumbrance is 7.25, below both thresholds (20 and 60)
     render(<ArmorStatsTable realStats={mockRealStats} />);
 
     const magicRow = screen.getByText('Magic Enc').closest('tr');
@@ -311,8 +311,8 @@ describe('ArmorStatsTable', () => {
 
     // 35 - 20 = 15
     expect(magicRow).toHaveTextContent('15.00');
-    // 35 - 30 = 5
-    expect(archeryRow).toHaveTextContent('5.00');
+    // 35 - 60 = negative, so clamped to 0 → shows '-'
+    expect(archeryRow).toHaveTextContent('-');
   });
 
   it('should not show Feather or Effective rows when feather is disabled', () => {
@@ -351,9 +351,9 @@ describe('ArmorStatsTable', () => {
     const magicRow = screen.getByText('Magic Enc').closest('tr');
     expect(magicRow).toHaveTextContent('15.00');
 
-    // Archery Enc = 35 - 30 = 5
+    // Archery Enc = 35 - 60 = negative, clamped to 0 → shows '-'
     const archeryRow = screen.getByText('Archery Enc').closest('tr');
-    expect(archeryRow).toHaveTextContent('5.00');
+    expect(archeryRow).toHaveTextContent('-');
   });
 
   it('should clamp effective encumbrance to zero', () => {

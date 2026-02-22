@@ -117,9 +117,6 @@ function App() {
               Armor Stats
             </h3>
             <ArmorStatsTable realStats={realStats} featherEnabled={featherEnabled} featherValue={featherValue} />
-            <p className="mt-3 text-xs text-gray-500 italic max-w-lg">
-              Note: I thought Archery encumbrance kicks in at 30, but the in-game paperdoll suggests it kicks in at 60. Let me know if there's a definitive source of truth for this.
-            </p>
             <div className="mt-3 relative inline-block">
               <button
                 onClick={handleShare}

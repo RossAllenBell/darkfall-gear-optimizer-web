@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getAvailableEncumbrances } from '../utils/gearCalculator';
 
-const ENC_TYPE_OFFSETS = { raw: 0, magic: 20, archery: 30 };
+const ENC_TYPE_OFFSETS = { raw: 0, magic: 20, archery: 60 };
 
 const ENC_TYPE_PRESETS = {
   raw:     [20, 40, 60],
   magic:   [20, 30, 40],
-  archery: [30, 50, 70],
+  archery: [60, 80, 100],
 };
 
 export default function EncumbranceInput({
