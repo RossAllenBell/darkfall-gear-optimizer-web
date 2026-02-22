@@ -105,13 +105,13 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
     await page.waitForTimeout(1000);
 
-    // Click the "30" preset button
-    await page.getByRole('button', { name: '30' }).click();
+    // Click the "40" preset button
+    await page.getByRole('button', { name: '40' }).click();
     await page.waitForTimeout(500);
 
-    // Verify the input value changed to 30
+    // Verify the input value changed to 40
     const inputValue = await page.locator('input#encumbrance').inputValue();
-    expect(parseFloat(inputValue)).toBeCloseTo(30, 1);
+    expect(parseFloat(inputValue)).toBeCloseTo(40, 1);
   });
 
   test('should show placeholder when no selections made', async ({ page }) => {
@@ -251,7 +251,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Set high encumbrance to get Dragon armor
-    await page.getByRole('button', { name: '30' }).click();
+    await page.getByRole('button', { name: '40' }).click();
     await page.waitForTimeout(500);
 
     // The stats table should be visible with data

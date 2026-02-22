@@ -3,6 +3,12 @@ import { getAvailableEncumbrances } from '../utils/gearCalculator';
 
 const ENC_TYPE_OFFSETS = { raw: 0, magic: 20, archery: 30 };
 
+const ENC_TYPE_PRESETS = {
+  raw:     [20, 40, 60],
+  magic:   [20, 30, 40],
+  archery: [30, 50, 70],
+};
+
 export default function EncumbranceInput({
   value,
   onChange,
@@ -15,14 +21,23 @@ export default function EncumbranceInput({
   disabled
 }) {
   const offset = ENC_TYPE_OFFSETS[encumbranceType] || 0;
+  const minRaw = Math.max(range.min, Math.max(20, offset));
+  const effectiveRange = { min: minRaw, max: range.max };
+  const displayRange = { min: effectiveRange.min - offset, max: effectiveRange.max - offset };
   const displayValue = value - offset;
-  const displayRange = { min: range.min - offset, max: range.max - offset };
 
   const [inputValue, setInputValue] = useState(displayValue.toFixed(2));
 
   useEffect(() => {
     setInputValue(displayValue.toFixed(2));
   }, [displayValue]);
+
+  // Clamp value up to effective minimum when enc type or range changes
+  useEffect(() => {
+    if (value < effectiveRange.min) {
+      onChange(effectiveRange.min);
+    }
+  }, [encumbranceType, effectiveRange.min, value, onChange]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -31,19 +46,19 @@ export default function EncumbranceInput({
   const handleInputBlur = () => {
     const numValue = parseFloat(inputValue);
     const rawValue = (isNaN(numValue) ? displayRange.min : numValue) + offset;
-    const clamped = Math.max(range.min, Math.min(range.max, rawValue));
+    const clamped = Math.max(effectiveRange.min, Math.min(effectiveRange.max, rawValue));
     onChange(clamped);
     setInputValue((clamped - offset).toFixed(2));
   };
 
   const handleIncrement = (delta) => {
     const newValue = parseFloat((value + delta).toFixed(2));
-    const clamped = Math.max(range.min, Math.min(range.max, newValue));
+    const clamped = Math.max(effectiveRange.min, Math.min(effectiveRange.max, newValue));
     onChange(clamped);
   };
 
   const handlePresetClick = (rawPreset) => {
-    if (rawPreset >= range.min && rawPreset <= range.max) {
+    if (rawPreset >= effectiveRange.min && rawPreset <= effectiveRange.max) {
       onChange(rawPreset);
     }
   };
@@ -53,11 +68,11 @@ export default function EncumbranceInput({
     ? getAvailableEncumbrances(datasetResults, headArmorType)
     : [];
 
-  const rawPresets = [20, 30, 40];
+  const rawPresets = ENC_TYPE_PRESETS[encumbranceType] || ENC_TYPE_PRESETS.raw;
   const presetAvailability = rawPresets.map(rawValue => ({
     rawValue,
     displayLabel: (rawValue - offset).toString(),
-    available: rawValue >= range.min && rawValue <= range.max
+    available: rawValue >= effectiveRange.min && rawValue <= effectiveRange.max
   }));
 
   return (
@@ -86,7 +101,7 @@ export default function EncumbranceInput({
       <div className="flex items-center gap-2 mb-3">
         <button
           onClick={() => handleIncrement(-0.1)}
-          disabled={disabled || value <= range.min}
+          disabled={disabled || value <= effectiveRange.min}
           className="px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Decrease by 0.1"
         >
@@ -110,7 +125,7 @@ export default function EncumbranceInput({
 
         <button
           onClick={() => handleIncrement(0.1)}
-          disabled={disabled || value >= range.max}
+          disabled={disabled || value >= effectiveRange.max}
           className="px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Increase by 0.1"
         >
