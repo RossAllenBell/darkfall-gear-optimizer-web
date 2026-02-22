@@ -379,6 +379,46 @@ describe('useGearOptimizer', () => {
     expect(result.current.encumbranceType).toBe('magic');
   });
 
+  it('should reset all state to defaults when resetAll is called', async () => {
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    await waitFor(() => {
+      expect(result.current.config).not.toBeNull();
+    });
+
+    // Set up non-default state
+    act(() => {
+      result.current.setSelectedProtectionType(mockConfig.protectionTypes[0]);
+      result.current.setSelectedArmorTier(mockConfig.armorAccessTiers[0]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.datasetResults).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.setFeatherEnabled(true);
+      result.current.setFeatherValue(5);
+      result.current.setHeadArmorType('Bone');
+      result.current.setTargetEncumbrance(30);
+      result.current.setEncumbranceType('magic');
+    });
+
+    // Reset
+    act(() => {
+      result.current.resetAll();
+    });
+
+    expect(result.current.selectedProtectionType).toBeNull();
+    expect(result.current.selectedArmorTier).toBeNull();
+    expect(result.current.featherEnabled).toBe(false);
+    expect(result.current.featherValue).toBe(0.1);
+    expect(result.current.headArmorType).toBeNull();
+    expect(result.current.targetEncumbrance).toBe(20);
+    expect(result.current.encumbranceType).toBe('raw');
+  });
+
   it('should filter encumbrance range by head armor type when feather is enabled', async () => {
     mockFetchResponses();
     const { result } = renderHook(() => useGearOptimizer());

@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { findOptimalGear, getEncumbranceRange, parseGearData, parseArmorCsv, calculateRealStats } from '../utils/gearCalculator';
-import { parseUrlParams, serializeUrlParams, buildUrl, validateParamsAgainstConfig } from '../utils/urlState';
+import { URL_DEFAULTS, parseUrlParams, serializeUrlParams, buildUrl, validateParamsAgainstConfig } from '../utils/urlState';
 
 /**
  * Custom hook for managing gear optimizer state and data fetching
@@ -190,6 +190,16 @@ export function useGearOptimizer() {
     return calculateRealStats(parsedGear, armorData);
   }, [optimalGear, armorData]);
 
+  const resetAll = useCallback(() => {
+    setSelectedProtectionType(null);
+    setSelectedArmorTier(null);
+    setFeatherEnabled(URL_DEFAULTS.feather);
+    setFeatherValue(URL_DEFAULTS.featherValue);
+    setHeadArmorType(URL_DEFAULTS.headArmor);
+    setTargetEncumbrance(URL_DEFAULTS.enc);
+    setEncumbranceType(URL_DEFAULTS.encType);
+  }, []);
+
   return {
     config,
     selectedProtectionType,
@@ -209,6 +219,7 @@ export function useGearOptimizer() {
     setTargetEncumbrance,
     encumbranceType,
     setEncumbranceType,
+    resetAll,
     optimalGear,
     encumbranceRange,
     realStats

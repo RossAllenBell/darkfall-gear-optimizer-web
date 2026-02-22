@@ -310,6 +310,32 @@ test.describe('Darkfall Gear Optimizer', () => {
     expect(url).toContain('encType=magic');
   });
 
+  test('should reset all inputs when Clear All is clicked', async ({ page }) => {
+    await page.goto('/');
+
+    // Set up state
+    await page.selectOption('select#dataset', { label: 'Physical' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
+    await page.waitForTimeout(1000);
+
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
+
+    // Click Clear All
+    await page.getByRole('button', { name: 'Clear All' }).click();
+    await page.waitForTimeout(500);
+
+    // Selections should be reset
+    await expect(page.locator('select#dataset')).toHaveValue('');
+    await expect(page.locator('select#armor-tier')).toHaveValue('');
+
+    // Results should disappear
+    await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).not.toBeVisible();
+
+    // URL should be clean
+    const url = page.url();
+    expect(url).not.toContain('?');
+  });
+
   test.describe('URL deeplinks', () => {
     test('should restore full state from URL params', async ({ page }) => {
       await page.goto('/?protection=physical&tier=common&enc=25');

@@ -26,6 +26,7 @@ function App() {
     setTargetEncumbrance,
     encumbranceType,
     setEncumbranceType,
+    resetAll,
     optimalGear,
     encumbranceRange,
     realStats
@@ -57,6 +58,15 @@ function App() {
         <div className={hasDataset ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'max-w-2xl'}>
           {/* Left Column - Inputs */}
           <div className="space-y-4">
+            <div className="flex justify-end">
+              <button
+                onClick={resetAll}
+                className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
+
             <DatasetSelector
               config={config}
               selectedProtectionType={selectedProtectionType}
