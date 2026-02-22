@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAvailableEncumbrances } from '../utils/gearCalculator';
 
+const ENC_TYPE_OFFSETS = { raw: 0, magic: 20, archery: 30 };
+
 export default function EncumbranceInput({
   value,
   onChange,
@@ -8,23 +10,30 @@ export default function EncumbranceInput({
   datasetResults,
   headArmorType,
   featherEnabled,
+  encumbranceType,
+  onEncumbranceTypeChange,
   disabled
 }) {
-  const [inputValue, setInputValue] = useState(value.toString());
+  const offset = ENC_TYPE_OFFSETS[encumbranceType] || 0;
+  const displayValue = value - offset;
+  const displayRange = { min: range.min - offset, max: range.max - offset };
+
+  const [inputValue, setInputValue] = useState(displayValue.toFixed(2));
 
   useEffect(() => {
-    setInputValue(value.toFixed(2));
-  }, [value]);
+    setInputValue(displayValue.toFixed(2));
+  }, [displayValue]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
 
   const handleInputBlur = () => {
-    const numValue = parseFloat(inputValue) || range.min;
-    const clamped = Math.max(range.min, Math.min(range.max, numValue));
+    const numValue = parseFloat(inputValue);
+    const rawValue = (isNaN(numValue) ? displayRange.min : numValue) + offset;
+    const clamped = Math.max(range.min, Math.min(range.max, rawValue));
     onChange(clamped);
-    setInputValue(clamped.toFixed(2));
+    setInputValue((clamped - offset).toFixed(2));
   };
 
   const handleIncrement = (delta) => {
@@ -33,9 +42,9 @@ export default function EncumbranceInput({
     onChange(clamped);
   };
 
-  const handlePresetClick = (preset) => {
-    if (preset >= range.min && preset <= range.max) {
-      onChange(preset);
+  const handlePresetClick = (rawPreset) => {
+    if (rawPreset >= range.min && rawPreset <= range.max) {
+      onChange(rawPreset);
     }
   };
 
@@ -44,24 +53,34 @@ export default function EncumbranceInput({
     ? getAvailableEncumbrances(datasetResults, headArmorType)
     : [];
 
-  const presets = [
-    { value: 20, label: '20 (Magic)' },
-    { value: 30, label: '30 (Archery)' },
-    { value: 40, label: '40' }
-  ];
-  const presetAvailability = presets.map(preset => ({
-    ...preset,
-    available: preset.value >= range.min && preset.value <= range.max
+  const rawPresets = [20, 30, 40];
+  const presetAvailability = rawPresets.map(rawValue => ({
+    rawValue,
+    displayLabel: (rawValue - offset).toString(),
+    available: rawValue >= range.min && rawValue <= range.max
   }));
 
   return (
     <div className="p-4 border rounded-lg bg-white shadow-sm">
       <label htmlFor="encumbrance" className="block text-sm font-medium text-gray-700 mb-2">
-        {featherEnabled ? 'Target Encumbrance after Feather applied' : 'Target Encumbrance'}
+        <span>Target </span>
+        <select
+          id="enc-type"
+          value={encumbranceType}
+          onChange={(e) => onEncumbranceTypeChange(e.target.value)}
+          className="inline-block mx-1 px-1 py-0.5 text-sm font-medium border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={disabled}
+        >
+          <option value="raw">Raw</option>
+          <option value="magic">Magic</option>
+          <option value="archery">Archery</option>
+        </select>
+        <span> Encumbrance</span>
+        {featherEnabled && <span> after Feather applied</span>}
       </label>
 
       <div className="text-xs text-gray-500 mb-3">
-        Valid range: {range.min.toFixed(2)} - {range.max.toFixed(2)}
+        Valid range: {displayRange.min.toFixed(2)} - {displayRange.max.toFixed(2)}
       </div>
 
       <div className="flex items-center gap-2 mb-3">
@@ -100,10 +119,10 @@ export default function EncumbranceInput({
       </div>
 
       <div className="flex gap-2">
-        {presetAvailability.map(({ value: preset, label, available }) => (
+        {presetAvailability.map(({ rawValue, displayLabel, available }) => (
           <button
-            key={preset}
-            onClick={() => handlePresetClick(preset)}
+            key={rawValue}
+            onClick={() => handlePresetClick(rawValue)}
             disabled={disabled || !available}
             className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               available
@@ -111,7 +130,7 @@ export default function EncumbranceInput({
                 : 'border-gray-200 bg-gray-100 cursor-not-allowed text-gray-400'
             }`}
           >
-            {label}
+            {displayLabel}
           </button>
         ))}
       </div>

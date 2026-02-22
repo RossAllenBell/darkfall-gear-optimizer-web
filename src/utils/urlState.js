@@ -2,6 +2,7 @@ export const URL_DEFAULTS = {
   protection: null,
   tier: null,
   enc: 20,
+  encType: 'raw',
   feather: false,
   featherValue: 0.1,
   headArmor: null,
@@ -27,6 +28,13 @@ export function parseUrlParams(searchString) {
     const enc = parseFloat(params.get('enc'));
     if (!isNaN(enc) && enc >= 0) {
       result.enc = enc;
+    }
+  }
+
+  if (params.has('encType')) {
+    const encType = params.get('encType');
+    if (['raw', 'magic', 'archery'].includes(encType)) {
+      result.encType = encType;
     }
   }
 
@@ -67,6 +75,10 @@ export function serializeUrlParams(state) {
 
   if (state.enc !== URL_DEFAULTS.enc) {
     params.set('enc', String(state.enc));
+  }
+
+  if (state.encType && state.encType !== URL_DEFAULTS.encType) {
+    params.set('encType', state.encType);
   }
 
   if (state.feather) {

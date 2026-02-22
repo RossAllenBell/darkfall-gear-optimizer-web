@@ -14,12 +14,13 @@ describe('parseUrlParams', () => {
 
   it('should parse all params', () => {
     const result = parseUrlParams(
-      '?protection=physical&tier=common&enc=25&feather=true&featherValue=5&headArmor=Bone'
+      '?protection=physical&tier=common&enc=25&encType=magic&feather=true&featherValue=5&headArmor=Bone'
     );
     expect(result).toEqual({
       protection: 'physical',
       tier: 'common',
       enc: 25,
+      encType: 'magic',
       feather: true,
       featherValue: 5,
       headArmor: 'Bone',
@@ -74,6 +75,20 @@ describe('parseUrlParams', () => {
   it('should parse enc=0 as valid', () => {
     const result = parseUrlParams('?enc=0');
     expect(result.enc).toBe(0);
+  });
+
+  it('should parse valid encType values', () => {
+    expect(parseUrlParams('?encType=raw').encType).toBe('raw');
+    expect(parseUrlParams('?encType=magic').encType).toBe('magic');
+    expect(parseUrlParams('?encType=archery').encType).toBe('archery');
+  });
+
+  it('should fall back to raw for invalid encType', () => {
+    expect(parseUrlParams('?encType=invalid').encType).toBe('raw');
+  });
+
+  it('should default encType to raw when omitted', () => {
+    expect(parseUrlParams('').encType).toBe('raw');
   });
 });
 
@@ -132,11 +147,27 @@ describe('serializeUrlParams', () => {
     expect(result).toBe('');
   });
 
+  it('should omit encType when raw (default)', () => {
+    const result = serializeUrlParams({ ...URL_DEFAULTS, encType: 'raw' });
+    expect(result).toBe('');
+  });
+
+  it('should include encType when magic', () => {
+    const result = serializeUrlParams({ ...URL_DEFAULTS, encType: 'magic' });
+    expect(result).toBe('encType=magic');
+  });
+
+  it('should include encType when archery', () => {
+    const result = serializeUrlParams({ ...URL_DEFAULTS, encType: 'archery' });
+    expect(result).toBe('encType=archery');
+  });
+
   it('should round-trip with parseUrlParams', () => {
     const state = {
       protection: 'magic',
       tier: 'common',
       enc: 25.5,
+      encType: 'archery',
       feather: true,
       featherValue: 3,
       headArmor: 'Plate',

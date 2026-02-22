@@ -27,6 +27,7 @@ export function useGearOptimizer() {
 
   // Encumbrance target — initialized from URL params
   const [targetEncumbrance, setTargetEncumbrance] = useState(() => urlParamsRef.current.enc);
+  const [encumbranceType, setEncumbranceType] = useState(() => urlParamsRef.current.encType);
 
   // Track pending URL param IDs that need config to resolve
   const pendingUrlParams = useRef({
@@ -149,6 +150,7 @@ export function useGearOptimizer() {
       protection: selectedProtectionType?.id ?? null,
       tier: selectedArmorTier?.id ?? null,
       enc: targetEncumbrance,
+      encType: encumbranceType,
       feather: featherEnabled,
       featherValue,
       headArmor: headArmorType,
@@ -160,7 +162,7 @@ export function useGearOptimizer() {
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, '', newUrl);
     }
-  }, [config, selectedProtectionType, selectedArmorTier, targetEncumbrance, featherEnabled, featherValue, headArmorType]);
+  }, [config, selectedProtectionType, selectedArmorTier, targetEncumbrance, encumbranceType, featherEnabled, featherValue, headArmorType]);
 
   // Calculate optimal gear
   const optimalGear = datasetResults
@@ -205,6 +207,8 @@ export function useGearOptimizer() {
     setHeadArmorType,
     targetEncumbrance,
     setTargetEncumbrance,
+    encumbranceType,
+    setEncumbranceType,
     optimalGear,
     encumbranceRange,
     realStats

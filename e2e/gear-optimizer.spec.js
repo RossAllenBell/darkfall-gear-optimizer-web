@@ -106,7 +106,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Click the "30" preset button
-    await page.getByRole('button', { name: '30 (Archery)' }).click();
+    await page.getByRole('button', { name: '30' }).click();
     await page.waitForTimeout(500);
 
     // Verify the input value changed to 30
@@ -191,7 +191,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Set encumbrance to 20 to get non-zero armor
-    await page.getByRole('button', { name: '20 (Magic)' }).click();
+    await page.getByRole('button', { name: '20' }).click();
     await page.waitForTimeout(500);
 
     // The stats table should contain actual numeric values (not all dashes)
@@ -251,7 +251,7 @@ test.describe('Darkfall Gear Optimizer', () => {
     await page.waitForTimeout(1000);
 
     // Set high encumbrance to get Dragon armor
-    await page.getByRole('button', { name: '30 (Archery)' }).click();
+    await page.getByRole('button', { name: '30' }).click();
     await page.waitForTimeout(500);
 
     // The stats table should be visible with data
@@ -279,6 +279,35 @@ test.describe('Darkfall Gear Optimizer', () => {
 
     // Results should be visible on mobile
     await expect(page.getByRole('heading', { name: 'Optimal Gear Configuration' })).toBeVisible();
+  });
+
+  test('should convert displayed encumbrance when switching to Magic type', async ({ page }) => {
+    await page.goto('/');
+
+    // Select protection type and armor tier
+    await page.selectOption('select#dataset', { label: 'Physical' });
+    await page.selectOption('select#armor-tier', { label: 'Bone and Plate' });
+    await page.waitForTimeout(1000);
+
+    // Set encumbrance to 20 (raw)
+    await page.getByRole('button', { name: '20' }).click();
+    await page.waitForTimeout(500);
+
+    // Verify raw value is 20
+    const rawValue = await page.locator('input#encumbrance').inputValue();
+    expect(parseFloat(rawValue)).toBeCloseTo(20, 1);
+
+    // Switch to Magic encumbrance type
+    await page.selectOption('select#enc-type', 'magic');
+    await page.waitForTimeout(500);
+
+    // Value should now display as 0 (20 raw - 20 offset)
+    const magicValue = await page.locator('input#encumbrance').inputValue();
+    expect(parseFloat(magicValue)).toBeCloseTo(0, 1);
+
+    // URL should contain encType=magic
+    const url = page.url();
+    expect(url).toContain('encType=magic');
   });
 
   test.describe('URL deeplinks', () => {
@@ -337,6 +366,18 @@ test.describe('Darkfall Gear Optimizer', () => {
       // URL should not have any query params
       const url = page.url();
       expect(url).not.toContain('?');
+    });
+
+    test('should restore encType from URL params', async ({ page }) => {
+      await page.goto('/?protection=physical&tier=common&enc=25&encType=magic');
+      await page.waitForTimeout(1000);
+
+      // Enc type dropdown should be set to magic
+      await expect(page.locator('select#enc-type')).toHaveValue('magic');
+
+      // Displayed value should be 25 - 20 = 5
+      const encValue = await page.locator('input#encumbrance').inputValue();
+      expect(parseFloat(encValue)).toBeCloseTo(5, 1);
     });
 
     test('should load normally with invalid URL params', async ({ page }) => {

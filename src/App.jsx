@@ -24,6 +24,8 @@ function App() {
     setHeadArmorType,
     targetEncumbrance,
     setTargetEncumbrance,
+    encumbranceType,
+    setEncumbranceType,
     optimalGear,
     encumbranceRange,
     realStats
@@ -87,6 +89,8 @@ function App() {
               datasetResults={datasetResults}
               headArmorType={featherEnabled ? headArmorType : null}
               featherEnabled={featherEnabled}
+              encumbranceType={encumbranceType}
+              onEncumbranceTypeChange={setEncumbranceType}
               disabled={!hasDataset || loading}
             />
           </div>

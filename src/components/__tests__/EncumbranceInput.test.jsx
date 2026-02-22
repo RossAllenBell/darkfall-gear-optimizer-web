@@ -17,18 +17,20 @@ describe('EncumbranceInput', () => {
     range: { min: 19.15, max: 42.50 },
     datasetResults: mockResults,
     headArmorType: null,
+    encumbranceType: 'raw',
+    onEncumbranceTypeChange: vi.fn(),
     disabled: false,
   };
 
   it('should render the encumbrance label and range', () => {
     render(<EncumbranceInput {...defaultProps} />);
-    expect(screen.getByLabelText('Target Encumbrance')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /Encumbrance/ })).toBeInTheDocument();
     expect(screen.getByText('Valid range: 19.15 - 42.50')).toBeInTheDocument();
   });
 
   it('should display the current value in the input', () => {
     render(<EncumbranceInput {...defaultProps} />);
-    const input = screen.getByLabelText('Target Encumbrance');
+    const input = screen.getByRole('textbox', { name: /Encumbrance/ });
     expect(input.value).toBe('25.30');
   });
 
@@ -73,7 +75,7 @@ describe('EncumbranceInput', () => {
     const onChange = vi.fn();
     render(<EncumbranceInput {...defaultProps} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Target Encumbrance');
+    const input = screen.getByRole('textbox', { name: /Encumbrance/ });
     await user.clear(input);
     await user.type(input, '999');
     await user.tab(); // triggers blur
@@ -86,7 +88,7 @@ describe('EncumbranceInput', () => {
     const onChange = vi.fn();
     render(<EncumbranceInput {...defaultProps} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Target Encumbrance');
+    const input = screen.getByRole('textbox', { name: /Encumbrance/ });
     await user.clear(input);
     await user.type(input, '1');
     await user.tab();
@@ -99,7 +101,7 @@ describe('EncumbranceInput', () => {
     const onChange = vi.fn();
     render(<EncumbranceInput {...defaultProps} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Target Encumbrance');
+    const input = screen.getByRole('textbox', { name: /Encumbrance/ });
     await user.clear(input);
     await user.type(input, 'abc');
     await user.tab();
@@ -109,8 +111,8 @@ describe('EncumbranceInput', () => {
 
   it('should render preset buttons (20, 30, 40)', () => {
     render(<EncumbranceInput {...defaultProps} />);
-    expect(screen.getByRole('button', { name: '20 (Magic)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '30 (Archery)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '20' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '30' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '40' })).toBeInTheDocument();
   });
 
@@ -119,7 +121,7 @@ describe('EncumbranceInput', () => {
     const onChange = vi.fn();
     render(<EncumbranceInput {...defaultProps} onChange={onChange} />);
 
-    await user.click(screen.getByRole('button', { name: '30 (Archery)' }));
+    await user.click(screen.getByRole('button', { name: '30' }));
     expect(onChange).toHaveBeenCalledWith(30);
   });
 
@@ -131,28 +133,28 @@ describe('EncumbranceInput', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: '20 (Magic)' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '30 (Archery)' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '20' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '30' })).toBeEnabled();
     expect(screen.getByRole('button', { name: '40' })).toBeDisabled();
   });
 
   it('should disable all inputs when disabled prop is true', () => {
     render(<EncumbranceInput {...defaultProps} disabled={true} />);
 
-    expect(screen.getByLabelText('Target Encumbrance')).toBeDisabled();
+    expect(screen.getByRole('textbox', { name: /Encumbrance/ })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Decrease by 0.1' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Increase by 0.1' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '20 (Magic)' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '30 (Archery)' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '20' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '30' })).toBeDisabled();
     expect(screen.getByRole('button', { name: '40' })).toBeDisabled();
   });
 
   it('should update displayed value when value prop changes', () => {
     const { rerender } = render(<EncumbranceInput {...defaultProps} value={25.30} />);
-    expect(screen.getByLabelText('Target Encumbrance').value).toBe('25.30');
+    expect(screen.getByRole('textbox', { name: /Encumbrance/ }).value).toBe('25.30');
 
     rerender(<EncumbranceInput {...defaultProps} value={30.00} />);
-    expect(screen.getByLabelText('Target Encumbrance').value).toBe('30.00');
+    expect(screen.getByRole('textbox', { name: /Encumbrance/ }).value).toBe('30.00');
   });
 
   it('should submit value on Enter key press', async () => {
@@ -160,10 +162,71 @@ describe('EncumbranceInput', () => {
     const onChange = vi.fn();
     render(<EncumbranceInput {...defaultProps} onChange={onChange} />);
 
-    const input = screen.getByLabelText('Target Encumbrance');
+    const input = screen.getByRole('textbox', { name: /Encumbrance/ });
     await user.clear(input);
     await user.type(input, '35{Enter}');
 
     expect(onChange).toHaveBeenCalledWith(35);
+  });
+
+  it('should render the encumbrance type dropdown', () => {
+    render(<EncumbranceInput {...defaultProps} />);
+    const select = document.getElementById('enc-type');
+    expect(select).toBeInTheDocument();
+    expect(select.value).toBe('raw');
+  });
+
+  it('should call onEncumbranceTypeChange when dropdown changes', async () => {
+    const user = userEvent.setup();
+    const onEncumbranceTypeChange = vi.fn();
+    render(<EncumbranceInput {...defaultProps} onEncumbranceTypeChange={onEncumbranceTypeChange} />);
+
+    await user.selectOptions(document.getElementById('enc-type'), 'magic');
+    expect(onEncumbranceTypeChange).toHaveBeenCalledWith('magic');
+  });
+
+  it('should display converted value in Magic mode', () => {
+    render(<EncumbranceInput {...defaultProps} value={25} encumbranceType="magic" />);
+    const input = screen.getByRole('textbox', { name: /Encumbrance/ });
+    expect(input.value).toBe('5.00');
+  });
+
+  it('should display converted range in Magic mode', () => {
+    render(<EncumbranceInput {...defaultProps} encumbranceType="magic" />);
+    expect(screen.getByText('Valid range: -0.85 - 22.50')).toBeInTheDocument();
+  });
+
+  it('should convert input back to raw value on blur in Magic mode', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<EncumbranceInput {...defaultProps} encumbranceType="magic" onChange={onChange} />);
+
+    const input = screen.getByRole('textbox', { name: /Encumbrance/ });
+    await user.clear(input);
+    await user.type(input, '10');
+    await user.tab();
+
+    // User typed 10 in magic mode, which is 10 + 20 = 30 raw
+    expect(onChange).toHaveBeenCalledWith(30);
+  });
+
+  it('should display presets in selected unit for Magic mode', () => {
+    render(<EncumbranceInput {...defaultProps} encumbranceType="magic" />);
+    expect(screen.getByRole('button', { name: '0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '10' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '20' })).toBeInTheDocument();
+  });
+
+  it('should display presets in selected unit for Archery mode', () => {
+    render(<EncumbranceInput {...defaultProps} encumbranceType="archery" />);
+    expect(screen.getByRole('button', { name: '-10' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '10' })).toBeInTheDocument();
+  });
+
+  it('should display converted value in Archery mode', () => {
+    render(<EncumbranceInput {...defaultProps} value={30} encumbranceType="archery" />);
+    const input = screen.getByRole('textbox', { name: /Encumbrance/ });
+    expect(input.value).toBe('0.00');
   });
 });

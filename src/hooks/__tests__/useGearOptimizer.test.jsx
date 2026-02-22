@@ -359,6 +359,26 @@ describe('useGearOptimizer', () => {
     expect(result.current.headArmorType).toBeNull();
   });
 
+  it('should default encumbranceType to raw', async () => {
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    await waitFor(() => {
+      expect(result.current.config).not.toBeNull();
+    });
+
+    expect(result.current.encumbranceType).toBe('raw');
+    expect(typeof result.current.setEncumbranceType).toBe('function');
+  });
+
+  it('should initialize encumbranceType from URL params', async () => {
+    window.history.replaceState(null, '', '/?encType=magic');
+    mockFetchResponses();
+    const { result } = renderHook(() => useGearOptimizer());
+
+    expect(result.current.encumbranceType).toBe('magic');
+  });
+
   it('should filter encumbrance range by head armor type when feather is enabled', async () => {
     mockFetchResponses();
     const { result } = renderHook(() => useGearOptimizer());
